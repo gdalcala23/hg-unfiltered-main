@@ -6,6 +6,8 @@
   <title>Burger 🐱 — HG.Unfiltered</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://i.ibb.co" />
+  <link rel="preconnect" href="https://firestore.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Caveat:wght@500;700&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="burger.css" />
 </head>
@@ -105,7 +107,7 @@
           <div class="burger-counter-card">
             <div class="burger-counter-label">With us for</div>
             <div class="burger-counter-value" id="burgerCounter">—</div>
-            <div class="burger-counter-sub">since October 4, 2024</div>
+            <div class="burger-counter-sub">since October 4, 2026</div>
           </div>
         </section>
 
@@ -184,7 +186,7 @@
             <div class="burger-ig-bio">
               <p class="burger-ig-bio-name">Burger 🐱</p>
               <p class="burger-ig-bio-text">Orange tabby · Full-time napper</p>
-              <p class="burger-ig-bio-text">Rescued Oct 4, 2024 🧡</p>
+              <p class="burger-ig-bio-text">Rehomed October 4, 2026 🧡</p>
             </div>
           </div>
         </div>
@@ -263,10 +265,61 @@
           <div class="mm-board" id="mmBoard"></div>
         </div>
 
-        <div class="burger-games-coming">
-          <div class="burger-games-coming-icon">🎮</div>
-          <p class="burger-games-coming-title">Maze coming soon</p>
-          <p class="burger-games-coming-sub">Burger's maze adventure is on the way.</p>
+        <div class="mz-game">
+          <div class="mz-header">
+            <div class="mz-title-group">
+              <div class="mz-title">Burger's Maze 🐱</div>
+              <div class="mz-subtitle">
+                Level <span id="mzLevel">1</span> · <span id="mzSize">10 × 10</span>
+              </div>
+            </div>
+
+            <div class="mz-controls">
+              <div class="mz-stat">
+                <span class="mz-stat-label">Steps</span>
+                <span class="mz-stat-value" id="mzSteps">0</span>
+              </div>
+
+              <div class="mz-stat">
+                <span class="mz-stat-label">Time</span>
+                <span class="mz-stat-value" id="mzTimer">0:00</span>
+              </div>
+
+              <button type="button" class="mz-reset-btn" id="mzReset" aria-label="Reset">
+                <span>🐾</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="mz-board-wrapper">
+            <div class="mz-board" id="mzBoard"></div>
+          </div>
+
+          <div class="mz-dpad">
+            <button type="button" class="mz-dpad-btn mz-up" data-dir="up" aria-label="Up">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="18 15 12 9 6 15" />
+              </svg>
+            </button>
+
+            <button type="button" class="mz-dpad-btn mz-left" data-dir="left" aria-label="Left">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+
+            <button type="button" class="mz-dpad-btn mz-right" data-dir="right" aria-label="Right">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+
+            <button type="button" class="mz-dpad-btn mz-down" data-dir="down" aria-label="Down">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+          </div>
         </div>
       </section>
 
@@ -364,6 +417,29 @@
       </div>
       <div class="mm-end-actions">
         <button type="button" class="mm-end-btn primary" id="mmEndRestart">Play again 🐾</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mz-end-modal" id="mzEndModal" hidden>
+    <div class="mz-end-backdrop"></div>
+    <div class="mz-end-content">
+      <div class="mz-end-emoji" id="mzEndEmoji">🎉</div>
+      <h3 class="mz-end-title" id="mzEndTitle">Level Complete!</h3>
+      <p class="mz-end-sub" id="mzEndSub">Burger found the treat 🐟</p>
+      <div class="mz-end-stats">
+        <div class="mz-end-stat">
+          <span class="mz-end-stat-label">Steps</span>
+          <span class="mz-end-stat-value" id="mzEndSteps">0</span>
+        </div>
+        <div class="mz-end-stat">
+          <span class="mz-end-stat-label">Time</span>
+          <span class="mz-end-stat-value" id="mzEndTime">0:00</span>
+        </div>
+      </div>
+      <div class="mz-end-actions">
+        <button type="button" class="mz-end-btn primary" id="mzEndNext">Next level 🐾</button>
+        <button type="button" class="mz-end-btn" id="mzEndRestart">Restart</button>
       </div>
     </div>
   </div>

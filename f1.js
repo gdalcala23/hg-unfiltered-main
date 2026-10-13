@@ -48,12 +48,48 @@ const TEAM_LOGOS = {
   cadillac: "images/teams/cadillac.png"
 };
 
+const TRACK_SVG_MAP = {
+  "bahrain":       "Sakhir (Bahrain).svg",
+  "saudi":         "Jeddah.svg",
+  "australian":    "Melbourne.svg",
+  "azerbaijan":    "Baku (Azerbaijan).svg",
+  "miami":         "Miami.svg",
+  "emilia":        "Imola.svg",
+  "monaco":        "Monaco.svg",
+  "spanish":       "Catalunya.svg",
+  "canadian":      "Montreal.svg",
+  "british":       "Silverstone.svg",
+  "austrian":      "Austria.svg",
+  "french":        "Paul Ricard.svg",
+  "hungarian":     "Hungaroring.svg",
+  "belgian":       "Spa.svg",
+  "dutch":         "Zandvoort.svg",
+  "italian":       "Monza.svg",
+  "singapore":     "Singapore.svg",
+  "japanese":      "Suzuka.svg",
+  "qatar":         "Losail.svg",
+  "united states": "Texas.svg",
+  "mexican":       "Mexico.svg",
+  "brazilian":     "Brazil.svg",
+  "las vegas":     "Las Vegas.svg",
+  "abu dhabi":     "Abu Dhabi.svg",
+  "portuguese":    "Portimao.svg",
+  "chinese":       "Shanghai.svg"
+};
+
 let allRaces = [];
 let allDrivers = [];
 let allConstructors = [];
 let currentFilter = "all";
 let countdownTimer = null;
 
+let tracksData = {};
+let tracksCalendar = { 2026: [], 2027: [] };
+let currentTrackSeason = 2026;
+
+/* ============================================
+   CACHE HELPERS
+   ============================================ */
 function cacheGet(key) {
   try {
     const raw = localStorage.getItem(CACHE_PREFIX + key);
@@ -76,6 +112,9 @@ function cacheSet(key, value) {
   } catch {}
 }
 
+/* ============================================
+   UTILITIES
+   ============================================ */
 function mergeOverrides(race) {
   const override = MANUAL_OVERRIDES.find(o => o.round === race.round);
   if (!override) return race;
@@ -88,6 +127,9 @@ function toISO(dateStr, timeStr) {
   return `${dateStr}T${time}`;
 }
 
+/* ============================================
+   API FETCHES
+   ============================================ */
 async function fetchDriverStandings() {
   const cached = cacheGet(`standings_${SEASON}`);
   if (cached) {
@@ -298,6 +340,9 @@ async function fetchRaceCalendar() {
   }
 }
 
+/* ============================================
+   HELPERS
+   ============================================ */
 function formatLocal(iso) {
   if (!iso) return "TBA";
   const d = new Date(iso);
@@ -407,7 +452,8 @@ function getFlagEmoji(country) {
     "Qatar": "🇶🇦",
     "UAE": "🇦🇪",
     "United Arab Emirates": "🇦🇪",
-    "Abu Dhabi": "🇦🇪"
+    "Abu Dhabi": "🇦🇪",
+    "Portugal": "🇵🇹"
   };
   return map[country] || "🏁";
 }
@@ -416,6 +462,9 @@ function getTeamLogo(constructorId) {
   return TEAM_LOGOS[constructorId] || "";
 }
 
+/* ============================================
+   BUILDERS — STANDINGS
+   ============================================ */
 function buildStandingsTable(standings) {
   const table = document.createElement("table");
   table.className = "standings-table";
@@ -506,6 +555,9 @@ function buildConstructorsTable(standings) {
   return table;
 }
 
+/* ============================================
+   BUILDERS — RACE CARDS
+   ============================================ */
 function buildPodium(podium) {
   const wrapper = document.createElement("div");
   wrapper.className = "podium";
@@ -551,7 +603,7 @@ function buildRaceCard(race, countdownTarget, isNext, isPast, podium) {
   if (isNext) {
     const badge = document.createElement("span");
     badge.className = "race-card-badge";
-    badge.textContent = "NEXT UP";
+    badge.textContent = "Next Up";
     card.appendChild(badge);
   }
 
@@ -576,7 +628,7 @@ function buildRaceCard(race, countdownTarget, isNext, isPast, podium) {
   if (race.isSprint) {
     const badge = document.createElement("span");
     badge.className = "sprint-badge";
-    badge.textContent = "SPRINT";
+    badge.textContent = "Sprint";
     name.appendChild(badge);
   }
 
@@ -660,6 +712,9 @@ function startCountdownTicker() {
   countdownTimer = setInterval(tick, 1000);
 }
 
+/* ============================================
+   RENDER — RACES / STANDINGS / HOME
+   ============================================ */
 function applyFilter(races, filter) {
   if (filter === "upcoming") return races.filter(isRaceUpcoming);
   if (filter === "past") return races.filter(isRacePast);
@@ -668,6 +723,7 @@ function applyFilter(races, filter) {
 
 function renderRaces() {
   const container = document.getElementById("race-container");
+  if (!container) return;
   container.innerHTML = "";
 
   const filtered = applyFilter(allRaces, currentFilter);
@@ -778,6 +834,410 @@ function renderHome() {
   }
 }
 
+/* ============================================
+   TRACKS MODULE
+   ============================================ */
+async function fetchTracksData() {
+  const cached = cacheGet("tracks_data");
+  if (cached) {
+    console.log("⚡ Track stats loaded from cache");
+    return cached;
+  }
+
+  try {
+    console.log("📡 Fetching tracks-data.json...");
+    const res = await fetch("tracks-data.json");
+    if (!res.ok) throw new Error(`tracks-data.json not found: ${res.status}`);
+    const json = await res.json();
+    console.log(`✅ Track stats loaded (${Object.keys(json).length} circuits)`);
+    cacheSet("tracks_data", json);
+    return json;
+  } catch (err) {
+    console.error("❌ Failed to load tracks-data.json:", err);
+    return {};
+  }
+}
+
+async function fetchTrackCalendar(season) {
+  const cached = cacheGet(`tracks_calendar_${season}`);
+  if (cached) {
+    console.log(`⚡ Track calendar ${season} loaded from cache`);
+    return cached;
+  }
+
+  try {
+    console.log(`📡 Fetching ${season} calendar for tracks...`);
+    const res = await fetch(`${API_BASE}/${season}/races/?format=json`);
+    if (!res.ok) throw new Error(`API request failed: ${res.status}`);
+
+    const json = await res.json();
+    const rawRaces = json?.MRData?.RaceTable?.Races;
+
+    if (!rawRaces || rawRaces.length === 0) {
+      console.warn(`⚠️ API returned empty ${season} calendar`);
+      return [];
+    }
+
+    const normalized = rawRaces.map(r => ({
+      round: Number(r.round),
+      name: r.raceName,
+      circuitId: r.Circuit?.circuitId || "",
+      circuitName: r.Circuit?.circuitName || "Unknown",
+      country: r.Circuit?.Location?.country || "",
+      locality: r.Circuit?.Location?.locality || "",
+      date: r.date || null
+    }));
+
+    console.log(`✅ Track calendar ${season} fetched (${normalized.length} races)`);
+    cacheSet(`tracks_calendar_${season}`, normalized);
+    return normalized;
+  } catch (err) {
+    console.error(`❌ Failed to fetch ${season} track calendar:`, err);
+    return [];
+  }
+}
+
+function findTrackKey(race) {
+  const combined = `${race.name} ${race.circuitId} ${race.circuitName}`.toLowerCase();
+
+  for (const key of Object.keys(TRACK_SVG_MAP)) {
+    if (combined.includes(key)) return key;
+  }
+
+  if (combined.includes("bahrain") || combined.includes("sakhir")) return "bahrain";
+  if (combined.includes("jeddah") || combined.includes("saudi")) return "saudi";
+  if (combined.includes("melbourne") || combined.includes("albert park")) return "australian";
+  if (combined.includes("baku") || combined.includes("azerbaijan")) return "azerbaijan";
+  if (combined.includes("miami")) return "miami";
+  if (combined.includes("imola") || combined.includes("emilia")) return "emilia";
+  if (combined.includes("monaco") || combined.includes("monte carlo")) return "monaco";
+  if (combined.includes("catalunya") || combined.includes("spain") || combined.includes("barcelona")) return "spanish";
+  if (combined.includes("montreal") || combined.includes("canada") || combined.includes("villeneuve")) return "canadian";
+  if (combined.includes("silverstone") || combined.includes("british")) return "british";
+  if (combined.includes("austria") || combined.includes("spielberg") || combined.includes("red bull ring")) return "austrian";
+  if (combined.includes("paul ricard") || combined.includes("french")) return "french";
+  if (combined.includes("hungaroring") || combined.includes("hungary")) return "hungarian";
+  if (combined.includes("spa") || combined.includes("belgian")) return "belgian";
+  if (combined.includes("zandvoort") || combined.includes("dutch")) return "dutch";
+  if (combined.includes("monza") || combined.includes("italian")) return "italian";
+  if (combined.includes("singapore") || combined.includes("marina bay")) return "singapore";
+  if (combined.includes("suzuka") || combined.includes("japanese")) return "japanese";
+  if (combined.includes("losail") || combined.includes("qatar")) return "qatar";
+  if (combined.includes("texas") || combined.includes("austin") || combined.includes("cota")) return "united states";
+  if (combined.includes("mexico") || combined.includes("rodriguez")) return "mexican";
+  if (combined.includes("brazil") || combined.includes("interlagos") || combined.includes("sao paulo")) return "brazilian";
+  if (combined.includes("las vegas")) return "las vegas";
+  if (combined.includes("abu dhabi") || combined.includes("yas marina")) return "abu dhabi";
+  if (combined.includes("portimao") || combined.includes("portugal") || combined.includes("algarve")) return "portuguese";
+  if (combined.includes("shanghai") || combined.includes("china")) return "chinese";
+
+  return null;
+}
+
+function buildTrackCard(race, stats) {
+  const trackKey = findTrackKey(race);
+  const svgFile = trackKey ? TRACK_SVG_MAP[trackKey] : null;
+  const svgPath = svgFile ? `images/tracks/${svgFile}` : null;
+
+  const card = document.createElement("article");
+  card.className = "track-card";
+
+  const mapDiv = document.createElement("div");
+  mapDiv.className = "track-map";
+
+  if (svgPath) {
+    const img = document.createElement("img");
+    img.src = svgPath;
+    img.alt = `${race.name} layout`;
+    img.style.width = "100%";
+    img.style.height = "100%";
+    img.style.objectFit = "contain";
+    img.style.filter = "drop-shadow(0 0 8px rgba(225, 6, 0, 0.45))";
+    img.onerror = () => {
+      mapDiv.innerHTML = `<span style="color: var(--text-muted); font-size: 0.7rem; text-align: center; font-family: var(--font-mono);">Track image not found<br>${svgFile}</span>`;
+    };
+    mapDiv.appendChild(img);
+  } else {
+    mapDiv.innerHTML = `<span style="color: var(--text-muted); font-size: 0.7rem; text-align: center; font-family: var(--font-mono);">No SVG mapped<br>${race.circuitName}</span>`;
+  }
+
+  const details = document.createElement("div");
+  details.className = "track-details";
+
+  const round = document.createElement("div");
+  round.className = "track-round";
+  round.textContent = `Round ${race.round}`;
+
+  const name = document.createElement("h3");
+  name.className = "track-name";
+  name.textContent = race.name;
+
+  const location = document.createElement("div");
+  location.className = "track-location";
+  location.innerHTML = `<span class="track-flag">${getFlagEmoji(race.country)}</span><span>${race.circuitName}${race.locality ? " · " + race.locality : ""}</span>`;
+
+  details.appendChild(round);
+  details.appendChild(name);
+  details.appendChild(location);
+
+  if (stats) {
+    const statsRow = document.createElement("div");
+    statsRow.className = "track-stats";
+
+    if (stats.length) {
+      statsRow.innerHTML += `
+        <div class="track-stat">
+          <span class="track-stat-label">Length</span>
+          <span class="track-stat-value">${stats.length}</span>
+        </div>
+      `;
+    }
+    if (stats.laps) {
+      statsRow.innerHTML += `
+        <div class="track-stat">
+          <span class="track-stat-label">Laps</span>
+          <span class="track-stat-value">${stats.laps}</span>
+        </div>
+      `;
+    }
+    if (stats.lapRecord) {
+      statsRow.innerHTML += `
+        <div class="track-stat">
+          <span class="track-stat-label">Lap Record</span>
+          <span class="track-stat-value">${stats.lapRecord}</span>
+        </div>
+      `;
+    }
+    if (stats.turns) {
+      statsRow.innerHTML += `
+        <div class="track-stat">
+          <span class="track-stat-label">Turns</span>
+          <span class="track-stat-value">${stats.turns}</span>
+        </div>
+      `;
+    }
+
+    details.appendChild(statsRow);
+
+    if (stats.highlights && stats.highlights.length > 0) {
+      const highlights = document.createElement("div");
+      highlights.className = "track-highlights";
+      stats.highlights.forEach(h => {
+        const item = document.createElement("div");
+        item.className = "track-highlight";
+        item.innerHTML = `<span class="track-highlight-dot ${h.color}"></span><span>${h.label}</span>`;
+        highlights.appendChild(item);
+      });
+      details.appendChild(highlights);
+    }
+  }
+
+  card.appendChild(mapDiv);
+  card.appendChild(details);
+  return card;
+}
+
+function renderTrackCards(season) {
+  const container = document.getElementById("tracks-container");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  const races = tracksCalendar[season] || [];
+
+  if (races.length === 0) {
+    container.innerHTML = `<p class="empty-state">No circuit data available for ${season}.</p>`;
+    return;
+  }
+
+  races.forEach((race, index) => {
+    const trackKey = findTrackKey(race);
+    const stats = trackKey ? tracksData[trackKey] : null;
+    const card = buildTrackCard(race, stats);
+    card.style.animationDelay = `${Math.min(index * 30, 400)}ms`;
+    container.appendChild(card);
+  });
+}
+
+function setupSeasonToggle() {
+  const toggle = document.getElementById("seasonToggle");
+  if (!toggle) return;
+
+  toggle.querySelectorAll(".season-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const season = Number(btn.dataset.season);
+      if (season === currentTrackSeason) return;
+
+      currentTrackSeason = season;
+      toggle.querySelectorAll(".season-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      renderTrackCards(season);
+    });
+  });
+}
+
+async function initTracks() {
+  const container = document.getElementById("tracks-container");
+  if (!container) return;
+
+  container.innerHTML = `<p class="empty-state">Loading circuits...</p>`;
+
+  tracksData = await fetchTracksData();
+
+  const [cal2026, cal2027] = await Promise.all([
+    fetchTrackCalendar(2026),
+    fetchTrackCalendar(2027)
+  ]);
+
+  tracksCalendar[2026] = cal2026;
+  tracksCalendar[2027] = cal2027;
+
+  const btn2027 = document.querySelector('.season-btn[data-season="2027"]');
+  if (btn2027) {
+    if (cal2027 && cal2027.length > 0) {
+      btn2027.hidden = false;
+      console.log(`✅ 2027 calendar available (${cal2027.length} races) — showing tab`);
+    } else {
+      btn2027.hidden = true;
+      console.log("ℹ️ 2027 calendar not available — keeping tab hidden");
+    }
+  }
+
+  currentTrackSeason = 2026;
+  const btn2026 = document.querySelector('.season-btn[data-season="2026"]');
+  if (btn2026) btn2026.classList.add("active");
+
+  renderTrackCards(2026);
+  setupSeasonToggle();
+}
+
+/* ============================================
+   TAB SWITCHING (TOP NAV + MOBILE NAV + FOOTER)
+   ============================================ */
+function switchTab(tab) {
+  if (!tab) return;
+
+  // Update active states sa lahat ng nav types
+  document.querySelectorAll(".top-link").forEach(b => {
+    b.classList.toggle("active", b.dataset.tab === tab);
+  });
+  document.querySelectorAll(".mobile-link").forEach(b => {
+    b.classList.toggle("active", b.dataset.tab === tab);
+  });
+
+  // Show target panel
+  document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+  const panel = document.getElementById(`${tab}-tab`);
+  if (panel) panel.classList.add("active");
+
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  // Close mobile nav if open
+  closeMobileNav();
+
+  // Calendar scroll
+  if (tab === "calendar") {
+    setTimeout(scrollToNextRace, 300);
+  }
+
+  // Re-trigger scroll reveal
+  setTimeout(setupScrollReveal, 100);
+}
+
+function setupTabs() {
+  // Top nav links
+  document.querySelectorAll(".top-link").forEach(btn => {
+    btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+  });
+
+  // Mobile nav links
+  document.querySelectorAll(".mobile-link").forEach(btn => {
+    btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+  });
+
+  // Footer links
+  document.querySelectorAll(".footer-link").forEach(btn => {
+    btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+  });
+
+  // Hero action buttons ([data-goto])
+  document.querySelectorAll("[data-goto]").forEach(btn => {
+    btn.addEventListener("click", () => switchTab(btn.dataset.goto));
+  });
+}
+
+/* ============================================
+   MOBILE NAV TOGGLE
+   ============================================ */
+function setupMobileNav() {
+  const menuBtn = document.getElementById("menuBtn");
+  const mobileNav = document.getElementById("mobileNav");
+
+  if (!menuBtn || !mobileNav) return;
+
+  menuBtn.addEventListener("click", () => {
+    const isOpen = mobileNav.classList.toggle("open");
+    menuBtn.classList.toggle("open", isOpen);
+  });
+}
+
+function closeMobileNav() {
+  const menuBtn = document.getElementById("menuBtn");
+  const mobileNav = document.getElementById("mobileNav");
+
+  if (mobileNav) mobileNav.classList.remove("open");
+  if (menuBtn) menuBtn.classList.remove("open");
+}
+
+/* ============================================
+   TOP NAV SCROLL STATE
+   ============================================ */
+function setupNavScroll() {
+  const nav = document.getElementById("topNav");
+  if (!nav) return;
+
+  const updateNav = () => {
+    if (window.scrollY > 40) {
+      nav.classList.add("scrolled");
+    } else {
+      nav.classList.remove("scrolled");
+    }
+  };
+
+  updateNav();
+  window.addEventListener("scroll", updateNav, { passive: true });
+}
+
+/* ============================================
+   SCROLL REVEAL
+   ============================================ */
+let revealObserver = null;
+
+function setupScrollReveal() {
+  const elements = document.querySelectorAll("[data-reveal]");
+  if (!elements.length) return;
+
+  if (revealObserver) revealObserver.disconnect();
+
+  revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("revealed");
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, {
+    threshold: 0.12,
+    rootMargin: "0px 0px -50px 0px"
+  });
+
+  elements.forEach(el => revealObserver.observe(el));
+}
+
+/* ============================================
+   FILTERS
+   ============================================ */
 function setupFilters() {
   document.querySelectorAll(".filter-btn").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -789,67 +1249,9 @@ function setupFilters() {
   });
 }
 
-function setupHeroActions() {
-  document.querySelectorAll("[data-goto]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const tab = btn.dataset.goto;
-      const navItem = document.querySelector(`.nav-item[data-tab="${tab}"]`);
-      if (navItem) navItem.click();
-    });
-  });
-}
-
-function setupTabs() {
-  document.querySelectorAll(".nav-item").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const tab = btn.dataset.tab;
-
-      document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-
-      document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
-      document.getElementById(`${tab}-tab`).classList.add("active");
-
-      if (window.innerWidth <= 860 && typeof closeMobileNav === "function") closeMobileNav();
-
-      if (tab === "calendar") {
-        setTimeout(scrollToNextRace, 100);
-      }
-    });
-  });
-}
-
-function setupSidebar() {
-  const layout = document.getElementById("layout");
-  const collapseBtn = document.getElementById("collapseBtn");
-  const hamburger = document.getElementById("hamburger");
-  const overlay = document.getElementById("overlay");
-
-  const savedState = localStorage.getItem("sidebarCollapsed");
-  if (savedState === "true") layout.classList.add("collapsed");
-
-  collapseBtn.addEventListener("click", () => {
-    layout.classList.toggle("collapsed");
-    localStorage.setItem("sidebarCollapsed", layout.classList.contains("collapsed"));
-  });
-
-  hamburger.addEventListener("click", () => {
-    const isOpen = layout.classList.toggle("nav-open");
-    document.body.classList.toggle("nav-open", isOpen);
-    overlay.classList.toggle("active", isOpen);
-  });
-
-  overlay.addEventListener("click", closeMobileNav);
-
-  window.closeMobileNav = closeMobileNav;
-
-  function closeMobileNav() {
-    layout.classList.remove("nav-open");
-    document.body.classList.remove("nav-open");
-    overlay.classList.remove("active");
-  }
-}
-
+/* ============================================
+   SCROLL TO NEXT RACE
+   ============================================ */
 function scrollToNextRace() {
   const next = document.querySelector(".race-card.next");
   if (next && currentFilter === "all") {
@@ -857,14 +1259,27 @@ function scrollToNextRace() {
   }
 }
 
+/* ============================================
+   INIT
+   ============================================ */
 async function init() {
-  const container = document.getElementById("race-container");
-  container.innerHTML = `
-    <div class="skeleton"></div>
-    <div class="skeleton"></div>
-    <div class="skeleton"></div>
-  `;
+  // Setup nav & reveal
+  setupNavScroll();
+  setupMobileNav();
+  setupTabs();
+  setupScrollReveal();
 
+  // Race calendar skeleton
+  const container = document.getElementById("race-container");
+  if (container) {
+    container.innerHTML = `
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+    `;
+  }
+
+  // Fetch all data
   const [races, standings, constructors] = await Promise.all([
     fetchRaceCalendar(),
     fetchDriverStandings(),
@@ -877,14 +1292,11 @@ async function init() {
   window.F1_RACES = races;
   window.F1_RESULTS = {};
 
-  if (races.length === 0) {
-    container.innerHTML = `<p style="text-align:center;color:#e10600;">Failed to load calendar. Check console.</p>`;
-  } else {
+  if (container && races.length === 0) {
+    container.innerHTML = `<p class="empty-state" style="color:var(--red);">Failed to load calendar. Check console.</p>`;
+  } else if (races.length > 0) {
     renderRaces();
     setupFilters();
-    setupTabs();
-    setupHeroActions();
-    setupSidebar();
 
     const results = await fetchAllResults(races);
     window.F1_RESULTS = results;
@@ -893,11 +1305,19 @@ async function init() {
     setTimeout(scrollToNextRace, 500);
   }
 
+  // Render standings & constructors
   renderStandings(standings);
   renderConstructors(constructors);
   renderHome();
 
+  // Start ticker
   startCountdownTicker();
+
+  // Tracks module
+  await initTracks();
+
+  // Re-run reveal after everything is rendered
+  setTimeout(setupScrollReveal, 200);
 }
 
 init();

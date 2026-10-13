@@ -1,0 +1,288 @@
+{
+  "bahrain": {
+    "length": "5.412 km",
+    "laps": 57,
+    "lapRecord": "1:31.447",
+    "turns": 15,
+    "highlights": [
+      { "color": "red", "label": "T1–T3: Best overtaking zone" },
+      { "color": "yellow", "label": "T10: Hard braking zone" },
+      { "color": "orange", "label": "T11–T13: Fastest sector" }
+    ]
+  },
+  "saudi": {
+    "length": "6.174 km",
+    "laps": 50,
+    "lapRecord": "1:30.734",
+    "turns": 27,
+    "highlights": [
+      { "color": "orange", "label": "T1–T4: Fastest street section" },
+      { "color": "yellow", "label": "T13–T16: Most technical complex" },
+      { "color": "red", "label": "T27: Best overtaking into final corner" }
+    ]
+  },
+  "australian": {
+    "length": "5.278 km",
+    "laps": 58,
+    "lapRecord": "1:19.813",
+    "turns": 14,
+    "highlights": [
+      { "color": "red", "label": "T1–T3: Best overtaking opportunity" },
+      { "color": "yellow", "label": "T9–T10: High-speed chicane" },
+      { "color": "orange", "label": "T11–T12: Fastest entry" }
+    ]
+  },
+  "azerbaijan": {
+    "length": "6.003 km",
+    "laps": 51,
+    "lapRecord": "1:43.009",
+    "turns": 20,
+    "highlights": [
+      { "color": "orange", "label": "T1: Longest straight in F1" },
+      { "color": "red", "label": "T3: Best overtaking zone" },
+      { "color": "yellow", "label": "T8–T15: Castle section" }
+    ]
+  },
+  "miami": {
+    "length": "5.412 km",
+    "laps": 57,
+    "lapRecord": "1:29.708",
+    "turns": 19,
+    "highlights": [
+      { "color": "red", "label": "T1: Best overtaking into turn 1" },
+      { "color": "yellow", "label": "T11–T16: Technical infield" },
+      { "color": "orange", "label": "T17–T19: Fast final sector" }
+    ]
+  },
+  "emilia": {
+    "length": "4.909 km",
+    "laps": 63,
+    "lapRecord": "1:15.484",
+    "turns": 19,
+    "highlights": [
+      { "color": "red", "label": "T1–T2: Best overtaking zone" },
+      { "color": "yellow", "label": "T9–T10: Acque Minerali" },
+      { "color": "orange", "label": "T17–T18: Fast final corner" }
+    ]
+  },
+  "monaco": {
+    "length": "3.337 km",
+    "laps": 78,
+    "lapRecord": "1:12.909",
+    "turns": 19,
+    "highlights": [
+      { "color": "yellow", "label": "T1: Sainte Devote" },
+      { "color": "red", "label": "T10–T11: Best overtaking (unlikely)" },
+      { "color": "orange", "label": "T18–T19: Swimming Pool chicane" }
+    ]
+  },
+  "spanish": {
+    "length": "4.657 km",
+    "laps": 66,
+    "lapRecord": "1:16.330",
+    "turns": 14,
+    "highlights": [
+      { "color": "red", "label": "T1: Best overtaking on lap 1" },
+      { "color": "yellow", "label": "T9: Campsa corner" },
+      { "color": "orange", "label": "T13–T14: Fast final chicane" }
+    ]
+  },
+  "canadian": {
+    "length": "4.361 km",
+    "laps": 70,
+    "lapRecord": "1:13.078",
+    "turns": 14,
+    "highlights": [
+      { "color": "red", "label": "T1–T2: Best overtaking zone" },
+      { "color": "yellow", "label": "T10: L'Epingle hairpin" },
+      { "color": "orange", "label": "T13–T14: Wall of Champions" }
+    ]
+  },
+  "british": {
+    "length": "5.891 km",
+    "laps": 52,
+    "lapRecord": "1:27.097",
+    "turns": 18,
+    "highlights": [
+      { "color": "red", "label": "T1–T3: Best overtaking (Village)" },
+      { "color": "yellow", "label": "T9: Copse corner" },
+      { "color": "orange", "label": "T14–T15: Maggotts–Becketts" }
+    ]
+  },
+  "austrian": {
+    "length": "4.318 km",
+    "laps": 71,
+    "lapRecord": "1:05.619",
+    "turns": 10,
+    "highlights": [
+      { "color": "red", "label": "T1–T3: Best overtaking zone" },
+      { "color": "yellow", "label": "T4: High-speed uphill" },
+      { "color": "orange", "label": "T9–T10: Fast final corner" }
+    ]
+  },
+  "french": {
+    "length": "5.842 km",
+    "laps": 53,
+    "lapRecord": "1:32.740",
+    "turns": 15,
+    "highlights": [
+      { "color": "red", "label": "T1–T3: Best overtaking zone" },
+      { "color": "yellow", "label": "T8–T9: Signes high-speed" },
+      { "color": "orange", "label": "T14–T15: Fast chicane" }
+    ]
+  },
+  "hungarian": {
+    "length": "4.381 km",
+    "laps": 70,
+    "lapRecord": "1:16.627",
+    "turns": 14,
+    "highlights": [
+      { "color": "red", "label": "T1: Best overtaking on lap 1" },
+      { "color": "yellow", "label": "T4–T6: Technical complex" },
+      { "color": "orange", "label": "T13–T14: Fast final corners" }
+    ]
+  },
+  "belgian": {
+    "length": "7.004 km",
+    "laps": 44,
+    "lapRecord": "1:41.252",
+    "turns": 19,
+    "highlights": [
+      { "color": "red", "label": "T1: Eau Rouge into Raidillon" },
+      { "color": "yellow", "label": "T10: Pouhon double-apex" },
+      { "color": "orange", "label": "T19: Bus Stop chicane" }
+    ]
+  },
+  "dutch": {
+    "length": "4.259 km",
+    "laps": 72,
+    "lapRecord": "1:11.097",
+    "turns": 14,
+    "highlights": [
+      { "color": "red", "label": "T1: Best overtaking into Tarzan" },
+      { "color": "yellow", "label": "T3: Hugenholtz banked corner" },
+      { "color": "orange", "label": "T14: Arie Luyendyk final banked" }
+    ]
+  },
+  "italian": {
+    "length": "5.793 km",
+    "laps": 53,
+    "lapRecord": "1:21.046",
+    "turns": 11,
+    "highlights": [
+      { "color": "red", "label": "T1: Best overtaking on lap 1" },
+      { "color": "yellow", "label": "T4–T5: Variante della Roggia" },
+      { "color": "orange", "label": "T11: Parabolica final corner" }
+    ]
+  },
+  "singapore": {
+    "length": "4.940 km",
+    "laps": 62,
+    "lapRecord": "1:29.525",
+    "turns": 19,
+    "highlights": [
+      { "color": "red", "label": "T1: Best overtaking on lap 1" },
+      { "color": "yellow", "label": "T13–T14: Technical complex" },
+      { "color": "orange", "label": "T18–T19: Fast final corners" }
+    ]
+  },
+  "japanese": {
+    "length": "5.807 km",
+    "laps": 53,
+    "lapRecord": "1:30.983",
+    "turns": 18,
+    "highlights": [
+      { "color": "red", "label": "T1–T2: Best overtaking zone" },
+      { "color": "yellow", "label": "T7: Esses S-curves" },
+      { "color": "orange", "label": "T14–T15: 130R high-speed" }
+    ]
+  },
+  "qatar": {
+    "length": "5.419 km",
+    "laps": 57,
+    "lapRecord": "1:23.196",
+    "turns": 16,
+    "highlights": [
+      { "color": "red", "label": "T1: Best overtaking into turn 1" },
+      { "color": "yellow", "label": "T10–T11: Technical complex" },
+      { "color": "orange", "label": "T15–T16: Fast final corners" }
+    ]
+  },
+  "united states": {
+    "length": "5.513 km",
+    "laps": 56,
+    "lapRecord": "1:36.169",
+    "turns": 20,
+    "highlights": [
+      { "color": "red", "label": "T1: Blind uphill into turn 1" },
+      { "color": "yellow", "label": "T11: Hard braking hairpin" },
+      { "color": "orange", "label": "T19–T20: Fast final corners" }
+    ]
+  },
+  "mexican": {
+    "length": "4.304 km",
+    "laps": 71,
+    "lapRecord": "1:17.774",
+    "turns": 17,
+    "highlights": [
+      { "color": "red", "label": "T1: Best overtaking into turn 1" },
+      { "color": "yellow", "label": "T7–T8: Technical complex" },
+      { "color": "orange", "label": "T16–T17: Fast final corners" }
+    ]
+  },
+  "brazilian": {
+    "length": "4.309 km",
+    "laps": 71,
+    "lapRecord": "1:10.540",
+    "turns": 15,
+    "highlights": [
+      { "color": "red", "label": "T1: Senna S best overtaking" },
+      { "color": "yellow", "label": "T7: Ferradura corner" },
+      { "color": "orange", "label": "T15: Juncao final corner" }
+    ]
+  },
+  "las vegas": {
+    "length": "6.201 km",
+    "laps": 50,
+    "lapRecord": "1:35.490",
+    "turns": 17,
+    "highlights": [
+      { "color": "orange", "label": "T1–T4: Longest straight in F1" },
+      { "color": "red", "label": "T12: Best overtaking zone" },
+      { "color": "yellow", "label": "T17: Final chicane" }
+    ]
+  },
+  "abu dhabi": {
+    "length": "5.281 km",
+    "laps": 58,
+    "lapRecord": "1:26.103",
+    "turns": 16,
+    "highlights": [
+      { "color": "red", "label": "T1: Best overtaking on lap 1" },
+      { "color": "yellow", "label": "T5–T7: Technical complex" },
+      { "color": "orange", "label": "T15–T16: Fast final corners" }
+    ]
+  },
+  "portuguese": {
+    "length": "4.653 km",
+    "laps": 66,
+    "lapRecord": "1:18.750",
+    "turns": 15,
+    "highlights": [
+      { "color": "red", "label": "T1: Best overtaking into turn 1" },
+      { "color": "yellow", "label": "T5–T6: Technical complex" },
+      { "color": "orange", "label": "T14–T15: Fast final corners" }
+    ]
+  },
+  "chinese": {
+    "length": "5.451 km",
+    "laps": 56,
+    "lapRecord": "1:32.238",
+    "turns": 16,
+    "highlights": [
+      { "color": "red", "label": "T1–T4: Best overtaking (long straight)" },
+      { "color": "yellow", "label": "T6: Hairpin" },
+      { "color": "orange", "label": "T13: Longest corner in F1" }
+    ]
+  }
+}

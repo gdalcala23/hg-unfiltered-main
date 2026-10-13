@@ -1,396 +1,443 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HG.Unfiltered — Us</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Caveat:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://i.ibb.co" />
+  <link rel="preconnect" href="https://firestore.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Caveat:wght@500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="us.css" />
 </head>
 <body>
-  <div class="us-layout">
-    <aside class="us-sidebar">
-      <a href="index.html" class="us-brand">
-        <div class="us-brand-mark"><span>HG</span></div>
-        <div class="us-brand-text">
-          <h1>HG<span class="dot">.</span>Unfiltered</h1>
-          <p class="us-brand-sub">Formula 1</p>
+
+  <!-- ===================== TOP NAV (floating) ===================== -->
+  <header class="us-topbar">
+    <a href="index.html" class="us-topbar-brand">
+      <span class="us-topbar-mark">HG</span>
+      <span class="us-topbar-name">HG<span class="dot">.</span>Unfiltered</span>
+    </a>
+
+    <nav class="us-topnav">
+      <a href="index.html" class="us-topnav-item">Home</a>
+      <button type="button" class="us-topnav-item active" data-tab="us">Us</button>
+      <button type="button" class="us-topnav-item" data-tab="gallery">Gallery</button>
+      <button type="button" class="us-topnav-item" data-tab="whispers">Whispers</button>
+      <button type="button" class="us-topnav-item" data-tab="memories">Memories</button>
+    </nav>
+  </header>
+
+  <!-- Theme toggle -->
+  <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+    <svg class="theme-icon-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4" /><line x1="12" y1="2" x2="12" y2="4" /><line x1="12" y1="20" x2="12" y2="22" /><line x1="2" y1="12" x2="4" y2="12" /><line x1="20" y1="12" x2="22" y2="12" /><line x1="4.9" y1="4.9" x2="6.3" y2="6.3" /><line x1="17.7" y1="17.7" x2="19.1" y2="19.1" /><line x1="4.9" y1="19.1" x2="6.3" y2="17.7" /><line x1="17.7" y1="6.3" x2="19.1" y2="4.9" /></svg>
+    <svg class="theme-icon-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
+  </button>
+
+  <main class="us-content">
+
+    <!-- ===================== US PANEL (Parallax) ===================== -->
+    <section id="us-us-panel" class="us-panel active">
+
+      <!-- PARALLAX HERO -->
+      <div class="parallax-hero">
+        <div class="parallax-layer parallax-bg" data-speed="0.25"></div>
+        <div class="parallax-layer parallax-mid" data-speed="0.5"></div>
+        <div class="parallax-overlay"></div>
+
+        <div class="parallax-hero-content">
+          <span class="hero-eyebrow">A little corner of the internet</span>
+          <h1 class="hero-title">
+            Somewhere between<br />
+            <em>hello</em> and <em>forever</em>,<br />
+            we found <span class="highlight-word">us</span>.
+          </h1>
+          <p class="hero-lede">
+            A space that belongs to no one else — built for two people,
+            one story, and every small moment in between.
+          </p>
+          <div class="hero-scroll-hint">
+            <span>scroll</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><polyline points="6 13 12 19 18 13" /></svg>
+          </div>
         </div>
-      </a>
-
-      <nav class="us-nav">
-        <a href="index.html" class="us-nav-item">
-          <span class="us-nav-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 10.5 12 3l9 7.5" />
-              <path d="M5 9.5V21h14V9.5" />
-            </svg>
-          </span>
-          <span class="us-nav-label">Home</span>
-        </a>
-
-        <button type="button" class="us-nav-item active" data-tab="us">
-          <span class="us-nav-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z" />
-            </svg>
-          </span>
-          <span class="us-nav-label">Us</span>
-        </button>
-
-        <button type="button" class="us-nav-item" data-tab="gallery">
-          <span class="us-nav-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-              <circle cx="8.5" cy="8.5" r="1.5" />
-              <polyline points="21 15 16 10 5 21" />
-            </svg>
-          </span>
-          <span class="us-nav-label">Gallery</span>
-        </button>
-
-        <button type="button" class="us-nav-item" data-tab="notes">
-          <span class="us-nav-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-              <line x1="8" y1="13" x2="16" y2="13" />
-              <line x1="8" y1="17" x2="16" y2="17" />
-            </svg>
-          </span>
-          <span class="us-nav-label">Notes</span>
-        </button>
-      </nav>
-
-      <div class="us-foot">
-        <p>for the two of us</p>
       </div>
-    </aside>
 
-    <main class="us-content">
-      <section id="us-us-panel" class="us-panel active">
-        <section class="us-hero">
-          <span class="us-eyebrow">A little corner of the internet</span>
-          <h1 class="us-title">Just the two of us</h1>
-          <p class="us-subtitle">
-            Photos, memories, and everything in between — our own space away from everything else.
-          </p>
-        </section>
-
-        <section class="us-counter-section">
-          <div class="us-counter-card">
-            <div class="us-counter-label">Together for</div>
-            <div class="us-counter-value" id="us-counter-value">—</div>
-            <div class="us-counter-sub" id="us-counter-sub">since February 23, 2026</div>
-          </div>
-        </section>
+      <!-- CHAPTER 2: COUNTER -->
+      <section class="chapter reveal" data-chapter="2">
+        <div class="chapter-inner">
+          <span class="chapter-num">Chapter Two</span>
+          <p class="chapter-note">and counting…</p>
+          <div class="counter-value" id="us-counter-value">—</div>
+          <div class="counter-sub" id="us-counter-sub">since February 23, 2026</div>
+        </div>
       </section>
 
-      <section id="us-gallery-panel" class="us-panel">
-        <div class="ig-profile">
-          <div class="ig-avatar">
-            <div class="ig-avatar-ring"></div>
-            <div class="ig-avatar-inner">
-              <span>HG</span>
-            </div>
-          </div>
-
-          <div class="ig-profile-info">
-            <div class="ig-profile-top">
-              <h2 class="ig-username">hg.unfiltered</h2>
-            </div>
-
-            <div class="ig-stats">
-              <div class="ig-stat">
-                <span class="ig-stat-num" id="ig-post-count">0</span>
-                <span class="ig-stat-label">posts</span>
-              </div>
-              <div class="ig-stat">
-                <span class="ig-stat-num">2</span>
-                <span class="ig-stat-label">followers</span>
-              </div>
-              <div class="ig-stat">
-                <span class="ig-stat-num">2</span>
-                <span class="ig-stat-label">following</span>
-              </div>
-            </div>
-
-            <div class="ig-bio">
-              <p class="ig-bio-name">Guile &amp; Hera</p>
-              <p class="ig-bio-text">just the two of us 🤍</p>
-              <p class="ig-bio-text">together since Feb 23, 2026</p>
-            </div>
-          </div>
+      <!-- CHAPTER 3: SCRAPBOOK -->
+      <section class="chapter chapter-scrapbook reveal" data-chapter="3">
+        <div class="chapter-inner">
+          <span class="chapter-num">Chapter Three</span>
+          <h2 class="chapter-title">
+            The story,<br /><em>so far.</em>
+          </h2>
+          <p class="chapter-body">
+            Photos we took, moments we kept — the small things that somehow became everything.
+          </p>
         </div>
 
-        <div class="ig-highlights" id="ig-highlights"></div>
+        <div class="polaroid-wall">
+          <figure class="polaroid reveal" data-delay="0">
+            <div class="polaroid-tape"></div>
+            <div class="polaroid-img" style="background-image: url('us/Pic1.jpg')"></div>
+            <figcaption>one</figcaption>
+          </figure>
 
-        <div class="ig-tabs">
-          <button type="button" class="ig-tab active" data-ig-tab="posts">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="7" height="7" />
-              <rect x="14" y="3" width="7" height="7" />
-              <rect x="3" y="14" width="7" height="7" />
-              <rect x="14" y="14" width="7" height="7" />
-            </svg>
-            <span>Posts</span>
+          <figure class="polaroid reveal" data-delay="120">
+            <div class="polaroid-tape"></div>
+            <div class="polaroid-img" style="background-image: url('us/pic2.jpg')"></div>
+            <figcaption>two</figcaption>
+          </figure>
+
+          <figure class="polaroid reveal" data-delay="240">
+            <div class="polaroid-tape"></div>
+            <div class="polaroid-img" style="background-image: url('us/pic3.jpg')"></div>
+            <figcaption>three</figcaption>
+          </figure>
+
+          <figure class="polaroid reveal" data-delay="360">
+            <div class="polaroid-tape"></div>
+            <div class="polaroid-img" style="background-image: url('us/pic4.jpg')"></div>
+            <figcaption>four</figcaption>
+          </figure>
+        </div>
+
+        <div class="chapter-inner chapter-inner-cta">
+          <button type="button" class="chapter-link" data-goto="gallery">
+            <span>See the full gallery</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
           </button>
-          <button type="button" class="ig-tab" data-ig-tab="saved">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-            </svg>
-            <span>Saved</span>
+        </div>
+      </section>
+
+      <!-- CHAPTER 4: WHISPERS -->
+      <section class="chapter chapter-whispers reveal" data-chapter="4">
+        <div class="chapter-inner">
+          <span class="chapter-num">Chapter Four</span>
+          <h2 class="chapter-title">
+            Little notes<br /><em>we leave each other.</em>
+          </h2>
+          <p class="chapter-body">
+            A whisper, a thought, a tiny reminder that we're still here.
+          </p>
+          <button type="button" class="chapter-link" data-goto="whispers">
+            <span>Read the whispers</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
           </button>
         </div>
 
-        <div class="ig-grid" id="ig-grid"></div>
+        <div class="note-stack">
+          <div class="note reveal" data-delay="0">
+            <p class="handwritten">"you were my favourite hello"</p>
+          </div>
+          <div class="note reveal" data-delay="150">
+            <p class="handwritten">"and my hardest goodbye"</p>
+          </div>
+          <div class="note reveal" data-delay="300">
+            <p class="handwritten">"still choosing you"</p>
+          </div>
+        </div>
+      </section>
 
-        <button type="button" class="ig-fab" id="ig-fab" aria-label="Add photo" title="Add photo">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
+      <!-- FOOTER -->
+      <footer class="us-footer reveal">
+        <p>for the two of us</p>
+      </footer>
+    </section>
+
+    <!-- ===================== GALLERY PANEL ===================== -->
+    <section id="us-gallery-panel" class="us-panel">
+      <div class="ig-profile">
+        <div class="ig-avatar">
+          <div class="ig-avatar-ring"></div>
+          <div class="ig-avatar-inner"><span>HG</span></div>
+        </div>
+
+        <div class="ig-profile-info">
+          <div class="ig-profile-top"><h2 class="ig-username">hg.unfiltered</h2></div>
+
+          <div class="ig-stats">
+            <div class="ig-stat"><span class="ig-stat-num" id="ig-post-count">0</span><span class="ig-stat-label">posts</span></div>
+            <div class="ig-stat"><span class="ig-stat-num">2</span><span class="ig-stat-label">followers</span></div>
+            <div class="ig-stat"><span class="ig-stat-num">2</span><span class="ig-stat-label">following</span></div>
+          </div>
+
+          <div class="ig-bio">
+            <p class="ig-bio-name">Guile &amp; Hera</p>
+            <p class="ig-bio-text">just the two of us 🤍</p>
+            <p class="ig-bio-text">together since Feb 23, 2026</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="ig-highlights" id="ig-highlights"></div>
+
+      <div class="ig-tabs">
+        <button type="button" class="ig-tab active" data-ig-tab="posts">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
+          <span>Posts</span>
         </button>
+        <button type="button" class="ig-tab" data-ig-tab="saved">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" /></svg>
+          <span>Saved</span>
+        </button>
+        <button type="button" class="ig-tab" data-ig-tab="ours">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z" /></svg>
+          <span>Ours</span>
+        </button>
+      </div>
 
-        <input type="file" id="ig-file-input" accept="image/*" hidden />
-        <input type="file" id="ig-hl-file-input" accept="image/*" hidden />
+      <div class="ig-grid" id="ig-grid"></div>
+      <div class="ig-grid" id="ig-ours-grid" hidden></div>
 
-        <div class="ig-modal" id="ig-modal" hidden>
-          <div class="ig-modal-backdrop" data-close-modal></div>
-          <div class="ig-modal-content">
-            <div class="ig-modal-preview">
-              <img id="ig-modal-preview-img" alt="" />
-            </div>
-            <div class="ig-modal-form">
-              <div class="ig-modal-header">
-                <h3>New Post</h3>
-                <button type="button" class="ig-modal-close" data-close-modal aria-label="Close">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
-              </div>
-              <textarea
-                id="ig-caption-input"
-                class="ig-caption-input"
-                placeholder="Write a caption..."
-                maxlength="300"
-                rows="3"
-              ></textarea>
-              <div class="ig-modal-actions">
-                <button type="button" class="ig-cancel-btn" data-close-modal>Cancel</button>
-                <button type="button" class="ig-post-btn" id="ig-post-btn">Share</button>
-              </div>
-            </div>
-          </div>
-        </div>
+      <button type="button" class="ig-fab" id="ig-fab" aria-label="Add photo" title="Add photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+      </button>
 
-        <div class="ig-confirm" id="ig-confirm" hidden>
-          <div class="ig-confirm-backdrop" data-close-confirm></div>
-          <div class="ig-confirm-content">
-            <h3 id="ig-confirm-title">Delete photo?</h3>
-            <p id="ig-confirm-desc">This will remove the photo from the gallery. This can't be undone.</p>
-            <div class="ig-confirm-actions">
-              <button type="button" class="ig-cancel-btn" data-close-confirm>Cancel</button>
-              <button type="button" class="ig-delete-btn" id="ig-confirm-delete">Delete</button>
-            </div>
-          </div>
-        </div>
+      <input type="file" id="ig-file-input" accept="image/*" hidden />
+      <input type="file" id="ig-ours-file-input" accept="image/*" hidden />
 
-        <div class="ig-prompt" id="ig-hl-modal" hidden>
-          <div class="ig-prompt-backdrop" data-close-hl></div>
-          <div class="ig-prompt-content">
-            <button type="button" class="ig-prompt-close" data-close-hl aria-label="Close">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-
-            <div class="ig-prompt-hero">
-              <div class="ig-prompt-hero-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="9" />
-                  <line x1="12" y1="8" x2="12" y2="16" />
-                  <line x1="8" y1="12" x2="16" y2="12" />
-                </svg>
-              </div>
-              <h3>New Highlight</h3>
-              <p>Group your favorite memories into a collection.</p>
-            </div>
-
-            <div class="ig-prompt-field">
-              <label for="ig-hl-name" class="ig-prompt-label">Name</label>
-              <input
-                type="text"
-                id="ig-hl-name"
-                class="ig-prompt-input"
-                placeholder="e.g. Trips, First dates, Faves"
-                maxlength="24"
-                autocomplete="off"
-              />
-              <div class="ig-prompt-counter">
-                <span id="ig-hl-counter">0</span> / 24
-              </div>
-            </div>
-
-            <div class="ig-prompt-actions">
-              <button type="button" class="ig-cancel-btn" data-close-hl>Cancel</button>
-              <button type="button" class="ig-post-btn ig-prompt-submit" id="ig-hl-create">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                <span>Create Highlight</span>
+      <div class="ig-modal" id="ig-modal" hidden>
+        <div class="ig-modal-backdrop" data-close-modal></div>
+        <div class="ig-modal-content">
+          <div class="ig-modal-preview"><img id="ig-modal-preview-img" alt="" /></div>
+          <div class="ig-modal-form">
+            <div class="ig-modal-header">
+              <h3>New Post</h3>
+              <button type="button" class="ig-modal-close" data-close-modal aria-label="Close">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
               </button>
             </div>
+            <textarea id="ig-caption-input" class="ig-caption-input" placeholder="Write a caption..." maxlength="300" rows="3"></textarea>
+            <div class="ig-modal-actions">
+              <button type="button" class="ig-cancel-btn" data-close-modal>Cancel</button>
+              <button type="button" class="ig-post-btn" id="ig-post-btn">Share</button>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div class="ig-menu" id="ig-menu" hidden>
-          <div class="ig-menu-backdrop" data-close-menu></div>
-          <div class="ig-menu-sheet">
-            <button type="button" class="ig-menu-item" id="ig-menu-download">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-              </svg>
-              <span>Download</span>
-            </button>
-            <button type="button" class="ig-menu-item ig-menu-item-danger" id="ig-menu-delete">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="3 6 5 6 21 6" />
-                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                <path d="M10 11v6" />
-                <path d="M14 11v6" />
-              </svg>
-              <span>Delete</span>
-            </button>
+      <div class="ig-confirm" id="ig-confirm" hidden>
+        <div class="ig-confirm-backdrop" data-close-confirm></div>
+        <div class="ig-confirm-content">
+          <h3 id="ig-confirm-title">Delete photo?</h3>
+          <p id="ig-confirm-desc">This will remove the photo from the gallery. This can't be undone.</p>
+          <div class="ig-confirm-actions">
+            <button type="button" class="ig-cancel-btn" data-close-confirm>Cancel</button>
+            <button type="button" class="ig-delete-btn" id="ig-confirm-delete">Delete</button>
           </div>
         </div>
+      </div>
 
-        <div class="ig-viewer" id="ig-viewer" hidden>
-          <div class="ig-viewer-backdrop" data-close-viewer></div>
-          <div class="ig-viewer-content">
-            <header class="ig-viewer-header">
-              <button type="button" class="ig-viewer-close" data-close-viewer aria-label="Close">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-              <h3 class="ig-viewer-title" id="ig-viewer-title">Highlight</h3>
-              <button type="button" class="ig-viewer-menu-btn" id="ig-viewer-menu-btn" aria-label="More">
-                <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
-                  <circle cx="5" cy="12" r="2" />
-                  <circle cx="12" cy="12" r="2" />
-                  <circle cx="19" cy="12" r="2" />
-                </svg>
-              </button>
-            </header>
+      <div class="ig-hl-modal" id="ig-hl-modal" hidden>
+        <div class="ig-hl-backdrop" data-close-hl></div>
+        <div class="ig-hl-content">
+          <h3>New Highlight</h3>
+          <input type="text" id="ig-hl-name" class="ig-hl-input" placeholder="Highlight name..." maxlength="15" autocomplete="off" />
+          <div class="ig-hl-count"><span id="ig-hl-counter">0</span>/15</div>
+          <div class="ig-hl-actions">
+            <button type="button" class="ig-cancel-btn" data-close-hl>Cancel</button>
+            <button type="button" class="ig-post-btn" id="ig-hl-create">Create Highlight</button>
+          </div>
+        </div>
+      </div>
 
-            <div class="ig-viewer-grid" id="ig-viewer-grid"></div>
-
+      <div class="ig-viewer" id="ig-viewer" hidden>
+        <div class="ig-viewer-header">
+          <button type="button" class="ig-viewer-back" data-close-viewer aria-label="Back">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+          </button>
+          <h3 id="ig-viewer-title">Highlight</h3>
+          <div class="ig-viewer-menu-wrap">
+            <button type="button" class="ig-viewer-menu-btn" id="ig-viewer-menu-btn" aria-label="Menu">
+              <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg>
+            </button>
             <div class="ig-viewer-menu" id="ig-viewer-menu" hidden>
-              <button type="button" class="ig-viewer-menu-item" id="ig-viewer-add">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                <span>Add photo</span>
+              <button type="button" id="ig-viewer-add">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                Add photo
               </button>
-              <button type="button" class="ig-viewer-menu-item ig-viewer-menu-danger" id="ig-viewer-delete">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="3 6 5 6 21 6" />
-                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                </svg>
-                <span>Delete highlight</span>
+              <button type="button" id="ig-viewer-delete" class="danger">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /></svg>
+                Delete highlight
               </button>
             </div>
           </div>
         </div>
-      </section>
+        <div class="ig-viewer-grid" id="ig-viewer-grid"></div>
+        <input type="file" id="ig-hl-file-input" accept="image/*" hidden />
+      </div>
+    </section>
 
-      <section id="us-notes-panel" class="us-panel">
-        <header class="us-section-header">
-          <span class="us-section-eyebrow">Notes &amp; love letters</span>
-          <h2>For Each Other</h2>
-          <p class="us-section-sub">
-            Write a note, a letter, anything — it syncs between us.
-          </p>
-        </header>
+    <!-- ===================== WHISPERS PANEL ===================== -->
+    <section id="us-whispers-panel" class="us-panel">
+      <header class="us-section-header">
+        <span class="us-section-eyebrow">Whispers &amp; love letters</span>
+        <h2>For Each Other</h2>
+        <p class="us-section-sub">Write a note, a letter, anything — it syncs between us.</p>
+      </header>
 
-        <div class="note-boards">
-          <div class="note-board" data-board="for-guile">
-            <div class="note-board-header">
-              <h3>For Guile</h3>
-              <span class="note-board-count" id="count-for-guile">0</span>
-            </div>
-
-            <div class="note-toolbar">
-              <div class="note-search">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="11" cy="11" r="7" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-                <input type="text" class="note-search-input" placeholder="Search notes..." autocomplete="off" />
-              </div>
-              <div class="note-filter">
-                <button type="button" class="note-filter-btn active" data-sort="recent">Recent</button>
-                <button type="button" class="note-filter-btn" data-sort="oldest">Oldest</button>
-              </div>
-            </div>
-
-            <form class="note-form" id="form-for-guile">
-              <input type="text" class="note-title-input" placeholder="Title (optional)" maxlength="60" autocomplete="off" />
-              <textarea class="note-textarea" placeholder="Write something for Guile..." maxlength="500" rows="3"></textarea>
-              <div class="note-form-actions">
-                <button type="button" class="note-cancel-btn" hidden>Cancel</button>
-                <button type="submit" class="note-submit">Add Note</button>
-              </div>
-            </form>
-
-            <div class="note-list" id="list-for-guile"></div>
+      <div class="note-boards">
+        <div class="note-board" data-board="for-guile">
+          <div class="note-board-header">
+            <h3>For Guile</h3>
+            <span class="note-board-count" id="count-for-guile">0</span>
           </div>
 
-          <div class="note-board" data-board="for-hera">
-            <div class="note-board-header">
-              <h3>For Hera</h3>
-              <span class="note-board-count" id="count-for-hera">0</span>
+          <div class="note-toolbar">
+            <div class="note-search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+              <input type="text" class="note-search-input" placeholder="Search whispers..." autocomplete="off" />
             </div>
-
-            <div class="note-toolbar">
-              <div class="note-search">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="11" cy="11" r="7" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-                <input type="text" class="note-search-input" placeholder="Search notes..." autocomplete="off" />
-              </div>
-              <div class="note-filter">
-                <button type="button" class="note-filter-btn active" data-sort="recent">Recent</button>
-                <button type="button" class="note-filter-btn" data-sort="oldest">Oldest</button>
-              </div>
+            <div class="note-filter">
+              <button type="button" class="note-filter-btn active" data-sort="recent">Recent</button>
+              <button type="button" class="note-filter-btn" data-sort="oldest">Oldest</button>
             </div>
-
-            <form class="note-form" id="form-for-hera">
-              <input type="text" class="note-title-input" placeholder="Title (optional)" maxlength="60" autocomplete="off" />
-              <textarea class="note-textarea" placeholder="Write something for Hera..." maxlength="500" rows="3"></textarea>
-              <div class="note-form-actions">
-                <button type="button" class="note-cancel-btn" hidden>Cancel</button>
-                <button type="submit" class="note-submit">Add Note</button>
-              </div>
-            </form>
-
-            <div class="note-list" id="list-for-hera"></div>
           </div>
+
+          <form class="note-form" id="form-for-guile">
+            <input type="text" class="note-title-input" placeholder="Title (optional)" maxlength="60" autocomplete="off" />
+            <textarea class="note-textarea" placeholder="Write something for Guile..." maxlength="500" rows="3"></textarea>
+            <div class="note-form-actions">
+              <button type="button" class="note-cancel-btn" hidden>Cancel</button>
+              <button type="submit" class="note-submit">Add Whisper</button>
+            </div>
+          </form>
+
+          <div class="note-list" id="list-for-guile"></div>
         </div>
-      </section>
-    </main>
+
+        <div class="note-board" data-board="for-hera">
+          <div class="note-board-header">
+            <h3>For Hera</h3>
+            <span class="note-board-count" id="count-for-hera">0</span>
+          </div>
+
+          <div class="note-toolbar">
+            <div class="note-search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+              <input type="text" class="note-search-input" placeholder="Search whispers..." autocomplete="off" />
+            </div>
+            <div class="note-filter">
+              <button type="button" class="note-filter-btn active" data-sort="recent">Recent</button>
+              <button type="button" class="note-filter-btn" data-sort="oldest">Oldest</button>
+            </div>
+          </div>
+
+          <form class="note-form" id="form-for-hera">
+            <input type="text" class="note-title-input" placeholder="Title (optional)" maxlength="60" autocomplete="off" />
+            <textarea class="note-textarea" placeholder="Write something for Hera..." maxlength="500" rows="3"></textarea>
+            <div class="note-form-actions">
+              <button type="button" class="note-cancel-btn" hidden>Cancel</button>
+              <button type="submit" class="note-submit">Add Whisper</button>
+            </div>
+          </form>
+
+          <div class="note-list" id="list-for-hera"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== MEMORIES PANEL ===================== -->
+    <section id="us-memories-panel" class="us-panel">
+      <header class="us-section-header mem-header">
+        <div>
+          <span class="us-section-eyebrow">Every moment, a destination</span>
+          <h2>Memories</h2>
+          <p class="us-section-sub">Our timeline — flights, stops, and every moment worth remembering.</p>
+        </div>
+        <button type="button" class="mem-add-btn" id="mem-add-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+          <span>Add Memory</span>
+        </button>
+      </header>
+
+      <div class="mem-timeline" id="mem-timeline"></div>
+    </section>
+  </main>
+
+  <!-- Memories: Add/Edit Modal -->
+  <div class="mem-modal" id="mem-modal" hidden>
+    <div class="mem-modal-backdrop" data-close-mem></div>
+    <div class="mem-modal-content">
+      <div class="mem-modal-header">
+        <h3 id="mem-modal-title">New Memory</h3>
+        <button type="button" class="mem-modal-close" data-close-mem aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+        </button>
+      </div>
+
+      <div class="mem-modal-body">
+        <label class="mem-field">
+          <span class="mem-field-label">Title</span>
+          <input type="text" id="mem-input-title" class="mem-input" placeholder="What happened?" maxlength="80" autocomplete="off" />
+        </label>
+
+        <div class="mem-field-row">
+          <label class="mem-field">
+            <span class="mem-field-label">Date</span>
+            <input type="date" id="mem-input-date" class="mem-input" />
+          </label>
+          <label class="mem-field">
+            <span class="mem-field-label">Location</span>
+            <input type="text" id="mem-input-location" class="mem-input" placeholder="Where?" maxlength="40" autocomplete="off" />
+          </label>
+        </div>
+
+        <label class="mem-field">
+          <span class="mem-field-label">Description</span>
+          <textarea id="mem-input-desc" class="mem-input mem-textarea" placeholder="Tell the story..." maxlength="500" rows="3"></textarea>
+        </label>
+
+        <div class="mem-field">
+          <span class="mem-field-label">Photos</span>
+          <div class="mem-photo-preview" id="mem-photo-preview"></div>
+          <button type="button" class="mem-add-photo-btn" id="mem-add-photo-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+            <span>Add photos</span>
+          </button>
+          <input type="file" id="mem-input-files" accept="image/*" multiple hidden />
+        </div>
+      </div>
+
+      <div class="mem-modal-actions">
+        <button type="button" class="ig-cancel-btn" data-close-mem>Cancel</button>
+        <button type="button" class="ig-post-btn" id="mem-modal-submit">Save Memory</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Memories: Photo Viewer -->
+  <div class="mem-viewer" id="mem-viewer" hidden>
+    <div class="mem-viewer-backdrop" data-close-mem-viewer></div>
+    <div class="mem-viewer-content">
+      <div class="mem-viewer-header">
+        <h3 id="mem-viewer-title">Memory</h3>
+        <span class="mem-viewer-counter" id="mem-viewer-counter">1 / 1</span>
+        <button type="button" class="mem-viewer-close" data-close-mem-viewer aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+        </button>
+      </div>
+      <div class="mem-viewer-stage">
+        <button type="button" class="mem-viewer-nav prev" id="mem-viewer-prev" aria-label="Previous">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+        </button>
+        <img id="mem-viewer-img" src="" alt="" />
+        <button type="button" class="mem-viewer-nav next" id="mem-viewer-next" aria-label="Next">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+        </button>
+      </div>
+    </div>
   </div>
 
   <script type="module" src="us.js"></script>

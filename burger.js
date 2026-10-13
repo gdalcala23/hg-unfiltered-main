@@ -20,7 +20,8 @@ const firebaseConfig = {
 };
 
 const IMGBB_API_KEY = "6d0a9fd961aa31573cfd6d51a3c549e1";
-const BURGER_START = "2024-10-04T00:00:00Z";
+const BURGER_BIRTHDAY = "2024-10-04T00:00:00Z";
+const BURGER_REHOME = "2026-10-04T00:00:00Z";
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -30,7 +31,6 @@ let pendingFile = null;
 let pendingDeleteId = null;
 let counterTimer = null;
 
-/* ---------- MinesBurger state ---------- */
 const MB_SIZE = 16;
 const MB_MINES = 40;
 
@@ -47,10 +47,8 @@ const mbState = {
   timerInterval: null
 };
 
-/* ---------- Match 3 state ---------- */
 const MM_ICONS = ["🐟", "🍗", "🥛", "🐾", "🧶", "🎣", "🐭", "🐈", "🐱", "🌙", "⭐", "🌸"];
 const MM_PAIRS = 12;
-const MM_COLS = 6;
 
 const mmState = {
   cards: [],
@@ -64,31 +62,33 @@ const mmState = {
   duration: 120
 };
 
-/* ---------- Age counter ---------- */
-function updateBurgerAge() {
-  const start = new Date(BURGER_START).getTime();
-  const now = Date.now();
-  const diff = now - start;
+const MZ_LEVEL_SIZES = [10, 15, 20];
 
-  const counterEl = document.getElementById("burgerCounter");
-  const ageShortEl = document.getElementById("burgerAgeShort");
-  if (!counterEl) return;
+const mzState = {
+  size: 10,
+  grid: [],
+  playerR: 1,
+  playerC: 1,
+  goalR: 1,
+  goalC: 1,
+  level: 1,
+  steps: 0,
+  gameWon: false,
+  timerStart: null,
+  timerInterval: null
+};
 
-  if (diff < 0) {
-    counterEl.textContent = "—";
-    return;
-  }
+function computeDiff(fromISO) {
+  const start = new Date(fromISO);
+  const now = new Date();
 
-  const startDate = new Date(BURGER_START);
-  const nowDate = new Date();
-
-  let years = nowDate.getFullYear() - startDate.getFullYear();
-  let months = nowDate.getMonth() - startDate.getMonth();
-  let days = nowDate.getDate() - startDate.getDate();
+  let years = now.getFullYear() - start.getFullYear();
+  let months = now.getMonth() - start.getMonth();
+  let days = now.getDate() - start.getDate();
 
   if (days < 0) {
     months -= 1;
-    const prevMonth = new Date(nowDate.getFullYear(), nowDate.getMonth(), 0);
+    const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
     days += prevMonth.getDate();
   }
   if (months < 0) {
@@ -96,10 +96,23 @@ function updateBurgerAge() {
     months += 12;
   }
 
-  counterEl.textContent = `${years} year${years !== 1 ? "s" : ""}, ${months} month${months !== 1 ? "s" : ""}, ${days} day${days !== 1 ? "s" : ""}`;
+  return { years, months, days };
+}
+
+function updateBurgerAge() {
+  const counterEl = document.getElementById("burgerCounter");
+  const ageShortEl = document.getElementById("burgerAgeShort");
+
+  if (counterEl) {
+    const d = computeDiff(BURGER_REHOME);
+    counterEl.textContent = d.years < 0
+      ? "—"
+      : `${d.years} year${d.years !== 1 ? "s" : ""}, ${d.months} month${d.months !== 1 ? "s" : ""}, ${d.days} day${d.days !== 1 ? "s" : ""}`;
+  }
 
   if (ageShortEl) {
-    ageShortEl.textContent = `${years}y ${months}m`;
+    const d = computeDiff(BURGER_BIRTHDAY);
+    ageShortEl.textContent = `${d.years}y ${d.months}m`;
   }
 }
 
@@ -125,7 +138,6 @@ function setChaosLevel() {
   }
 }
 
-/* ---------- Image upload ---------- */
 async function uploadToImgBB(file) {
   const form = new FormData();
   form.append("image", file);
@@ -141,7 +153,6 @@ async function uploadToImgBB(file) {
   return json.data.url;
 }
 
-/* ---------- Photo cell ---------- */
 function buildBurgerCell(photo) {
   const cell = document.createElement("div");
   cell.className = "burger-cell";
@@ -151,6 +162,7 @@ function buildBurgerCell(photo) {
   img.src = photo.url;
   img.alt = photo.caption || "Burger photo";
   img.loading = "lazy";
+  img.decoding = "async";
   img.referrerPolicy = "no-referrer";
   img.crossOrigin = "anonymous";
   img.onerror = () => {
@@ -260,9 +272,20 @@ function renderBurgerGallery() {
     return tb - ta;
   });
 
-  sorted.forEach(photo => {
-    grid.appendChild(buildBurgerCell(photo));
-  });
+  const BATCH = 6;
+  let i = 0;
+
+  function renderBatch() {
+    const end = Math.min(i + BATCH, sorted.length);
+    for (; i < end; i++) {
+      grid.appendChild(buildBurgerCell(sorted[i]));
+    }
+    if (i < sorted.length) {
+      requestAnimationFrame(renderBatch);
+    }
+  }
+
+  requestAnimationFrame(renderBatch);
 }
 
 function subscribeToPhotos() {
@@ -303,7 +326,6 @@ async function toggleLike(photoId, liked) {
   }
 }
 
-/* ---------- Photo Modal ---------- */
 function openModal(file) {
   pendingFile = file;
   const modal = document.getElementById("burgerModal");
@@ -380,7 +402,6 @@ async function confirmDelete() {
   }
 }
 
-/* ---------- Cursor cat + emoji burst ---------- */
 function setupCursorCat() {
   const cursorCat = document.getElementById("cursorCat");
   if (!cursorCat) return;
@@ -440,12 +461,13 @@ function setupClickBurst() {
     }
     if (e.target.closest(".mb-board")) return;
     if (e.target.closest(".mm-board")) return;
+    if (e.target.closest(".mz-board")) return;
+    if (e.target.closest(".mz-dpad")) return;
     const emoji = emojis[Math.floor(Math.random() * emojis.length)];
     spawnBurst(e.clientX, e.clientY, emoji);
   });
 }
 
-/* ---------- Setup: Upload ---------- */
 function setupUpload() {
   const fab = document.getElementById("burgerFab");
   const fileInput = document.getElementById("burgerFileInput");
@@ -480,7 +502,6 @@ function setupUpload() {
   if (confirmDeleteBtn) confirmDeleteBtn.addEventListener("click", confirmDelete);
 }
 
-/* ---------- Setup: Sidebar nav ---------- */
 function setupSidebarNav() {
   const navItems = document.querySelectorAll(".burger-nav-item[data-section]");
   const sections = document.querySelectorAll(".burger-section");
@@ -523,7 +544,6 @@ function setupSidebarNav() {
   }
 }
 
-/* ---------- MinesBurger ---------- */
 function mbIndex(r, c) {
   return r * MB_SIZE + c;
 }
@@ -848,7 +868,6 @@ function setupMinesBurger() {
   mbReset();
 }
 
-/* ---------- Match 3 ---------- */
 function mmShuffle(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -1113,7 +1132,294 @@ function setupMatch3() {
   mmReset();
 }
 
-/* ---------- Init ---------- */
+function mzGetSize(level) {
+  if (level <= 1) return MZ_LEVEL_SIZES[0];
+  if (level === 2) return MZ_LEVEL_SIZES[1];
+  return MZ_LEVEL_SIZES[2];
+}
+
+function mzGenerate(size) {
+  const grid = Array.from({ length: size }, () => Array(size).fill(1));
+
+  for (let r = 1; r < size - 1; r += 2) {
+    for (let c = 1; c < size - 1; c += 2) {
+      grid[r][c] = 0;
+    }
+  }
+
+  const visited = Array.from({ length: size }, () => Array(size).fill(false));
+  const stack = [[1, 1]];
+  visited[1][1] = true;
+
+  const dirs = [[0, 2], [0, -2], [2, 0], [-2, 0]];
+
+  while (stack.length > 0) {
+    const [r, c] = stack[stack.length - 1];
+    const neighbors = [];
+
+    for (const [dr, dc] of dirs) {
+      const nr = r + dr;
+      const nc = c + dc;
+      if (nr > 0 && nc > 0 && nr < size - 1 && nc < size - 1 && !visited[nr][nc]) {
+        neighbors.push([nr, nc, r + dr / 2, c + dc / 2]);
+      }
+    }
+
+    if (neighbors.length === 0) {
+      stack.pop();
+      continue;
+    }
+
+    const [nr, nc, wr, wc] = neighbors[Math.floor(Math.random() * neighbors.length)];
+    grid[wr][wc] = 0;
+    grid[nr][nc] = 0;
+    visited[nr][nc] = true;
+    stack.push([nr, nc]);
+  }
+
+  grid[size - 2][size - 2] = 0;
+
+  if (grid[size - 2][size - 3] === 1 && grid[size - 3][size - 2] === 1) {
+    grid[size - 2][size - 3] = 0;
+  }
+
+  return grid;
+}
+
+function mzReset() {
+  if (mzState.timerInterval) clearInterval(mzState.timerInterval);
+  mzState.timerInterval = null;
+  mzState.timerStart = null;
+
+  mzState.size = mzGetSize(mzState.level);
+  mzState.grid = mzGenerate(mzState.size);
+  mzState.playerR = 1;
+  mzState.playerC = 1;
+  mzState.goalR = mzState.size - 2;
+  mzState.goalC = mzState.size - 2;
+  mzState.steps = 0;
+  mzState.gameWon = false;
+
+  const timerEl = document.getElementById("mzTimer");
+  if (timerEl) timerEl.textContent = "0:00";
+
+  const stepsEl = document.getElementById("mzSteps");
+  if (stepsEl) stepsEl.textContent = "0";
+
+  const levelEl = document.getElementById("mzLevel");
+  if (levelEl) levelEl.textContent = mzState.level;
+
+  const sizeEl = document.getElementById("mzSize");
+  if (sizeEl) sizeEl.textContent = `${mzState.size} × ${mzState.size}`;
+
+  const modal = document.getElementById("mzEndModal");
+  if (modal) modal.hidden = true;
+
+  mzRender();
+}
+
+function mzFormatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
+function mzStartTimer() {
+  if (mzState.timerInterval) return;
+  mzState.timerStart = Date.now();
+  mzState.timerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - mzState.timerStart) / 1000);
+    const timerEl = document.getElementById("mzTimer");
+    if (timerEl) timerEl.textContent = mzFormatTime(elapsed);
+  }, 1000);
+}
+
+function mzStopTimer() {
+  if (mzState.timerInterval) {
+    clearInterval(mzState.timerInterval);
+    mzState.timerInterval = null;
+  }
+}
+
+function mzGetElapsed() {
+  if (!mzState.timerStart) return 0;
+  return Math.floor((Date.now() - mzState.timerStart) / 1000);
+}
+
+function mzRender() {
+  const boardEl = document.getElementById("mzBoard");
+  if (!boardEl) return;
+
+  boardEl.innerHTML = "";
+  boardEl.style.gridTemplateColumns = `repeat(${mzState.size}, 1fr)`;
+
+  for (let r = 0; r < mzState.size; r++) {
+    for (let c = 0; c < mzState.size; c++) {
+      const cell = document.createElement("div");
+      cell.className = "mz-cell";
+
+      if (mzState.grid[r][c] === 1) {
+        cell.classList.add("mz-wall");
+      } else {
+        cell.classList.add("mz-path");
+      }
+
+      if (r === mzState.playerR && c === mzState.playerC) {
+        cell.classList.add("mz-player");
+        cell.textContent = "🐱";
+      } else if (r === mzState.goalR && c === mzState.goalC) {
+        cell.classList.add("mz-goal");
+        cell.textContent = "🐟";
+      }
+
+      boardEl.appendChild(cell);
+    }
+  }
+}
+
+function mzMove(dr, dc) {
+  if (mzState.gameWon) return;
+
+  if (!mzState.timerInterval && mzState.steps === 0) {
+    mzStartTimer();
+  }
+
+  const nr = mzState.playerR + dr;
+  const nc = mzState.playerC + dc;
+
+  if (nr < 0 || nc < 0 || nr >= mzState.size || nc >= mzState.size) return;
+  if (mzState.grid[nr][nc] === 1) return;
+
+  mzState.playerR = nr;
+  mzState.playerC = nc;
+  mzState.steps++;
+
+  const stepsEl = document.getElementById("mzSteps");
+  if (stepsEl) stepsEl.textContent = mzState.steps;
+
+  mzRender();
+
+  if (nr === mzState.goalR && nc === mzState.goalC) {
+    mzWin();
+  }
+}
+
+function mzWin() {
+  mzState.gameWon = true;
+  mzStopTimer();
+
+  const elapsed = mzGetElapsed();
+
+  const modal = document.getElementById("mzEndModal");
+  const stepsEl = document.getElementById("mzEndSteps");
+  const timeEl = document.getElementById("mzEndTime");
+  const titleEl = document.getElementById("mzEndTitle");
+  const subEl = document.getElementById("mzEndSub");
+  const emojiEl = document.getElementById("mzEndEmoji");
+
+  if (titleEl) titleEl.textContent = `Level ${mzState.level} Complete!`;
+  if (subEl) subEl.textContent = "Burger found the treat 🐟";
+  if (emojiEl) emojiEl.textContent = "🎉";
+
+  if (stepsEl) stepsEl.textContent = mzState.steps;
+  if (timeEl) timeEl.textContent = mzFormatTime(elapsed);
+
+  spawnBurst(window.innerWidth / 2, window.innerHeight / 2, "🎉");
+  spawnBurst(window.innerWidth / 2 - 60, window.innerHeight / 2, "🐟");
+  spawnBurst(window.innerWidth / 2 + 60, window.innerHeight / 2, "🧡");
+
+  if (modal) modal.hidden = false;
+}
+
+function mzNextLevel() {
+  mzState.level++;
+  mzReset();
+}
+
+function setupMaze() {
+  const resetBtn = document.getElementById("mzReset");
+  const endNext = document.getElementById("mzEndNext");
+  const endRestart = document.getElementById("mzEndRestart");
+  const endModal = document.getElementById("mzEndModal");
+
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      mzReset();
+    });
+  }
+
+  if (endNext) {
+    endNext.addEventListener("click", () => {
+      if (endModal) endModal.hidden = true;
+      mzNextLevel();
+    });
+  }
+
+  if (endRestart) {
+    endRestart.addEventListener("click", () => {
+      if (endModal) endModal.hidden = true;
+      mzState.level = 1;
+      mzReset();
+    });
+  }
+
+  document.querySelectorAll(".mz-dpad-btn").forEach(btn => {
+    btn.addEventListener("click", e => {
+      e.preventDefault();
+      const dir = btn.dataset.dir;
+      if (dir === "up") mzMove(-1, 0);
+      else if (dir === "down") mzMove(1, 0);
+      else if (dir === "left") mzMove(0, -1);
+      else if (dir === "right") mzMove(0, 1);
+    });
+  });
+
+  document.addEventListener("keydown", e => {
+    const gamesSection = document.getElementById("burger-games-section");
+    if (!gamesSection || !gamesSection.classList.contains("active")) return;
+
+    const key = e.key.toLowerCase();
+    if (key === "arrowup" || key === "w") { e.preventDefault(); mzMove(-1, 0); }
+    else if (key === "arrowdown" || key === "s") { e.preventDefault(); mzMove(1, 0); }
+    else if (key === "arrowleft" || key === "a") { e.preventDefault(); mzMove(0, -1); }
+    else if (key === "arrowright" || key === "d") { e.preventDefault(); mzMove(0, 1); }
+  });
+
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchStartTime = 0;
+
+  const boardWrapper = document.querySelector(".mz-board-wrapper");
+  if (boardWrapper) {
+    boardWrapper.addEventListener("touchstart", e => {
+      const touch = e.touches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+      touchStartTime = Date.now();
+    }, { passive: true });
+
+    boardWrapper.addEventListener("touchend", e => {
+      const touch = e.changedTouches[0];
+      const dx = touch.clientX - touchStartX;
+      const dy = touch.clientY - touchStartY;
+      const dt = Date.now() - touchStartTime;
+
+      if (dt > 500) return;
+      if (Math.abs(dx) < 30 && Math.abs(dy) < 30) return;
+
+      if (Math.abs(dx) > Math.abs(dy)) {
+        if (dx > 0) mzMove(0, 1);
+        else mzMove(0, -1);
+      } else {
+        if (dy > 0) mzMove(1, 0);
+        else mzMove(-1, 0);
+      }
+    }, { passive: true });
+  }
+
+  mzReset();
+}
+
 function init() {
   startAgeCounter();
   setChaosLevel();
@@ -1123,6 +1429,7 @@ function init() {
   setupSidebarNav();
   setupMinesBurger();
   setupMatch3();
+  setupMaze();
   subscribeToPhotos();
 }
 
