@@ -1,10 +1,12 @@
+/* ============================================
+   CONSTANTS
+   ============================================ */
 const API_BASE = "https://api.jolpi.ca/ergast/f1";
+const OPENF1_BASE = "https://api.openf1.org/v1";
 const SEASON = 2026;
 
 const CACHE_TTL = 60 * 60 * 1000;
 const CACHE_PREFIX = "hguf_";
-
-const MANUAL_OVERRIDES = [];
 
 const SESSION_LABELS = {
   fp1: "FP1",
@@ -14,22 +16,6 @@ const SESSION_LABELS = {
   sprint: "Sprint",
   quali: "Qualifying",
   gp: "Grand Prix"
-};
-
-const TEAM_COLORS = {
-  mercedes: "#00d2be",
-  ferrari: "#dc0000",
-  red_bull: "#1e41ff",
-  mclaren: "#ff8700",
-  alpine: "#0090ff",
-  rb: "#6692ff",
-  racing_bulls: "#6692ff",
-  haas: "#b6babd",
-  williams: "#005aff",
-  sauber: "#52e252",
-  audi: "#52e252",
-  aston_martin: "#006f62",
-  cadillac: "#b8860b"
 };
 
 const TEAM_LOGOS = {
@@ -77,6 +63,22 @@ const TRACK_SVG_MAP = {
   "chinese":       "Shanghai.svg"
 };
 
+const TEAM_COLORS = {
+  mercedes: "#00d2be",
+  ferrari: "#e10600",
+  red_bull: "#1e41ff",
+  mclaren: "#ff8700",
+  alpine: "#0090ff",
+  rb: "#6692ff",
+  racing_bulls: "#6692ff",
+  haas: "#b6babd",
+  williams: "#005aff",
+  sauber: "#52e252",
+  audi: "#52e252",
+  aston_martin: "#006f62",
+  cadillac: "#b8860b"
+};
+
 let allRaces = [];
 let allDrivers = [];
 let allConstructors = [];
@@ -87,8 +89,20 @@ let tracksData = {};
 let tracksCalendar = { 2026: [], 2027: [] };
 let currentTrackSeason = 2026;
 
+let liveState = {
+  session: null,
+  race: null,
+  drivers: [],
+  locations: null,
+  timeRange: { start: 0, end: 0 },
+  currentTime: 0,
+  isPlaying: false,
+  speed: 1,
+  animationId: null
+};
+
 /* ============================================
-   CACHE HELPERS
+   CACHE
    ============================================ */
 function cacheGet(key) {
   try {
@@ -101,9 +115,7 @@ function cacheGet(key) {
       return null;
     }
     return parsed.v;
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
 function cacheSet(key, value) {
@@ -115,253 +127,24 @@ function cacheSet(key, value) {
 /* ============================================
    UTILITIES
    ============================================ */
-function mergeOverrides(race) {
-  const override = MANUAL_OVERRIDES.find(o => o.round === race.round);
-  if (!override) return race;
-  return { ...race, sessions: { ...race.sessions, ...override.sessions } };
-}
-
 function toISO(dateStr, timeStr) {
   if (!dateStr) return null;
-  const time = timeStr || "00:00:00Z";
-  return `${dateStr}T${time}`;
+  return `${dateStr}T${timeStr || "00:00:00Z"}`;
 }
 
-/* ============================================
-   API FETCHES
-   ============================================ */
-async function fetchDriverStandings() {
-  const cached = cacheGet(`standings_${SEASON}`);
-  if (cached) {
-    console.log("⚡ Driver standings loaded from cache");
-    return cached;
-  }
-
-  try {
-    console.log("📡 Fetching driver standings from API...");
-    const res = await fetch(`${API_BASE}/${SEASON}/driverstandings/?format=json`);
-    if (!res.ok) throw new Error(`API request failed: ${res.status}`);
-
-    const json = await res.json();
-    const standingsList = json?.MRData?.StandingsTable?.StandingsLists?.[0]?.DriverStandings;
-
-    if (!standingsList || standingsList.length === 0) {
-      console.warn("⚠️ API returned empty driver standings");
-      return [];
-    }
-
-    const normalized = standingsList.map(s => ({
-      position: Number(s.position),
-      points: Number(s.points),
-      wins: Number(s.wins),
-      driverId: s.Driver?.driverId || "",
-      firstName: s.Driver?.givenName || "",
-      lastName: s.Driver?.familyName || "",
-      code: s.Driver?.code || "",
-      nationality: s.Driver?.nationality || "",
-      constructorId: s.Constructors?.[0]?.constructorId || "",
-      constructorName: s.Constructors?.[0]?.name || ""
-    }));
-
-    console.log(`✅ Driver standings fetched (${normalized.length} drivers)`);
-    cacheSet(`standings_${SEASON}`, normalized);
-    return normalized;
-  } catch (err) {
-    console.error("❌ Failed to fetch driver standings:", err);
-    const stale = localStorage.getItem(CACHE_PREFIX + `standings_${SEASON}`);
-    if (stale) {
-      try {
-        console.warn("↩️ Using stale cached driver standings");
-        return JSON.parse(stale).v;
-      } catch {}
-    }
-    return [];
-  }
-}
-
-async function fetchConstructorStandings() {
-  const cached = cacheGet(`constructors_${SEASON}`);
-  if (cached) {
-    console.log("⚡ Constructor standings loaded from cache");
-    return cached;
-  }
-
-  try {
-    console.log("📡 Fetching constructor standings from API...");
-    const res = await fetch(`${API_BASE}/${SEASON}/constructorstandings/?format=json`);
-    if (!res.ok) throw new Error(`API request failed: ${res.status}`);
-
-    const json = await res.json();
-    const standingsList = json?.MRData?.StandingsTable?.StandingsLists?.[0]?.ConstructorStandings;
-
-    if (!standingsList || standingsList.length === 0) {
-      console.warn("⚠️ API returned empty constructor standings");
-      return [];
-    }
-
-    const normalized = standingsList.map(s => ({
-      position: Number(s.position),
-      points: Number(s.points),
-      wins: Number(s.wins),
-      constructorId: s.Constructor?.constructorId || "",
-      constructorName: s.Constructor?.name || "",
-      nationality: s.Constructor?.nationality || ""
-    }));
-
-    console.log(`✅ Constructor standings fetched (${normalized.length} teams)`);
-    cacheSet(`constructors_${SEASON}`, normalized);
-    return normalized;
-  } catch (err) {
-    console.error("❌ Failed to fetch constructor standings:", err);
-    const stale = localStorage.getItem(CACHE_PREFIX + `constructors_${SEASON}`);
-    if (stale) {
-      try {
-        console.warn("↩️ Using stale cached constructor standings");
-        return JSON.parse(stale).v;
-      } catch {}
-    }
-    return [];
-  }
-}
-
-async function fetchRaceResults(round) {
-  const cached = cacheGet(`results_${SEASON}_${round}`);
-  if (cached) return cached;
-
-  try {
-    const res = await fetch(`${API_BASE}/${SEASON}/${round}/results/?format=json`);
-    if (!res.ok) return [];
-    const json = await res.json();
-    const results = json?.MRData?.RaceTable?.Races?.[0]?.Results;
-    if (!results) return [];
-
-    const podium = results.slice(0, 3).map(r => ({
-      position: Number(r.position),
-      driverId: r.Driver?.driverId || "",
-      firstName: r.Driver?.givenName || "",
-      lastName: r.Driver?.familyName || "",
-      code: r.Driver?.code || "",
-      constructorId: r.Constructors?.[0]?.constructorId || "",
-      constructorName: r.Constructors?.[0]?.name || ""
-    }));
-
-    cacheSet(`results_${SEASON}_${round}`, podium);
-    return podium;
-  } catch {
-    return [];
-  }
-}
-
-async function fetchAllResults(races) {
-  const pastRaces = races.filter(isRacePast);
-  if (pastRaces.length === 0) return {};
-
-  const missing = pastRaces.filter(r => !cacheGet(`results_${SEASON}_${r.round}`));
-
-  if (missing.length === 0) {
-    console.log("⚡ All results loaded from cache");
-  } else {
-    console.log(`📡 Fetching results for ${missing.length} race(s)...`);
-  }
-
-  const results = await Promise.all(
-    pastRaces.map(async race => {
-      const podium = await fetchRaceResults(race.round);
-      return { round: race.round, podium };
-    })
-  );
-
-  const map = {};
-  results.forEach(r => { map[r.round] = r.podium; });
-  console.log("✅ Results ready");
-  return map;
-}
-
-async function fetchRaceCalendar() {
-  const cached = cacheGet(`calendar_${SEASON}`);
-  if (cached) {
-    console.log("⚡ Calendar loaded from cache");
-    return cached;
-  }
-
-  try {
-    console.log("📡 Fetching calendar from API...");
-
-    const res = await fetch(`${API_BASE}/${SEASON}/races/?format=json`);
-    if (!res.ok) throw new Error(`API request failed: ${res.status}`);
-
-    const json = await res.json();
-    const rawRaces = json?.MRData?.RaceTable?.Races;
-
-    if (!rawRaces || rawRaces.length === 0) throw new Error("API returned an empty calendar");
-
-    const normalized = rawRaces.map(r => {
-      const isSprint = Boolean(r.Sprint);
-      const sessionDate = (key) => {
-        const s = r[key];
-        return s ? toISO(s.date, s.time) : null;
-      };
-
-      const raceDate = r.date && r.time ? toISO(r.date, r.time) : null;
-
-      return {
-        round: Number(r.round),
-        name: r.raceName,
-        circuit: r.Circuit?.circuitName || "Unknown Circuit",
-        country: r.Circuit?.Location?.country || "",
-        locality: r.Circuit?.Location?.locality || "",
-        isSprint,
-        sessions: {
-          fp1: sessionDate("FirstPractice"),
-          fp2: sessionDate("SecondPractice"),
-          fp3: sessionDate("ThirdPractice"),
-          sprintQuali: sessionDate("SprintQualifying"),
-          sprint: sessionDate("Sprint"),
-          quali: sessionDate("Qualifying"),
-          gp: sessionDate("Race") || raceDate
-        }
-      };
-    });
-
-    const finalRaces = normalized.map(mergeOverrides);
-    console.log(`✅ Fetched ${finalRaces.length} races`);
-    cacheSet(`calendar_${SEASON}`, finalRaces);
-    return finalRaces;
-  } catch (err) {
-    console.error("❌ Failed to fetch calendar:", err);
-    const stale = localStorage.getItem(CACHE_PREFIX + `calendar_${SEASON}`);
-    if (stale) {
-      try {
-        console.warn("↩️ Using stale cached calendar");
-        return JSON.parse(stale).v;
-      } catch {}
-    }
-    return [];
-  }
-}
-
-/* ============================================
-   HELPERS
-   ============================================ */
 function formatLocal(iso) {
   if (!iso) return "TBA";
   const d = new Date(iso);
   if (isNaN(d.getTime())) return "TBA";
-
   return d.toLocaleString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
+    weekday: "short", month: "short", day: "numeric",
+    hour: "2-digit", minute: "2-digit"
   });
 }
 
 function getLastSessionTime(race) {
-  const times = Object.values(race.sessions)
-    .filter(Boolean)
-    .map(iso => new Date(iso).getTime())
-    .filter(t => !isNaN(t));
+  const times = Object.values(race.sessions).filter(Boolean)
+    .map(iso => new Date(iso).getTime()).filter(t => !isNaN(t));
   return times.length ? Math.max(...times) : null;
 }
 
@@ -377,26 +160,20 @@ function isRaceUpcoming(race) {
 
 function getNextSession(race) {
   const now = Date.now();
-  let next = null;
-  let nextISO = null;
-
+  let next = null, nextISO = null;
   Object.entries(race.sessions).forEach(([key, iso]) => {
     if (!iso) return;
     const t = new Date(iso).getTime();
     if (isNaN(t)) return;
     if (t > now && (!next || t < new Date(nextISO).getTime())) {
-      next = key;
-      nextISO = iso;
+      next = key; nextISO = iso;
     }
   });
-
-  if (!next) return null;
-  return { key: next, iso: nextISO };
+  return next ? { key: next, iso: nextISO } : null;
 }
 
 function getNextRaceWithUpcomingSession(races) {
   let best = null;
-
   races.forEach(race => {
     const session = getNextSession(race);
     if (!session) return;
@@ -405,55 +182,29 @@ function getNextRaceWithUpcomingSession(races) {
       best = { race, session, iso: session.iso };
     }
   });
-
   return best;
 }
 
 function renderCountdown(targetISO) {
   const target = new Date(targetISO).getTime();
   const diff = target - Date.now();
-
   if (isNaN(target)) return "TBA";
   if (diff <= 0) return "Session started";
-
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
   const minutes = Math.floor((diff / (1000 * 60)) % 60);
   const seconds = Math.floor((diff / 1000) % 60);
-
   return `${days}d ${hours}h ${minutes}m ${seconds}s`;
 }
 
 function getFlagEmoji(country) {
   const map = {
-    "Australia": "🇦🇺",
-    "China": "🇨🇳",
-    "Japan": "🇯🇵",
-    "Bahrain": "🇧🇭",
-    "Saudi Arabia": "🇸🇦",
-    "USA": "🇺🇸",
-    "United States": "🇺🇸",
-    "Italy": "🇮🇹",
-    "Monaco": "🇲🇨",
-    "Spain": "🇪🇸",
-    "Canada": "🇨🇦",
-    "Austria": "🇦🇹",
-    "UK": "🇬🇧",
-    "United Kingdom": "🇬🇧",
-    "Great Britain": "🇬🇧",
-    "Hungary": "🇭🇺",
-    "Belgium": "🇧🇪",
-    "Netherlands": "🇳🇱",
-    "Azerbaijan": "🇦🇿",
-    "Singapore": "🇸🇬",
-    "Mexico": "🇲🇽",
-    "Brazil": "🇧🇷",
-    "Las Vegas": "🇺🇸",
-    "Qatar": "🇶🇦",
-    "UAE": "🇦🇪",
-    "United Arab Emirates": "🇦🇪",
-    "Abu Dhabi": "🇦🇪",
-    "Portugal": "🇵🇹"
+    "Australia":"🇦🇺","China":"🇨🇳","Japan":"🇯🇵","Bahrain":"🇧🇭","Saudi Arabia":"🇸🇦",
+    "USA":"🇺🇸","United States":"🇺🇸","Italy":"🇮🇹","Monaco":"🇲🇨","Spain":"🇪🇸",
+    "Canada":"🇨🇦","Austria":"🇦🇹","UK":"🇬🇧","United Kingdom":"🇬🇧","Great Britain":"🇬🇧",
+    "Hungary":"🇭🇺","Belgium":"🇧🇪","Netherlands":"🇳🇱","Azerbaijan":"🇦🇿","Singapore":"🇸🇬",
+    "Mexico":"🇲🇽","Brazil":"🇧🇷","Las Vegas":"🇺🇸","Qatar":"🇶🇦","UAE":"🇦🇪",
+    "United Arab Emirates":"🇦🇪","Abu Dhabi":"🇦🇪","Portugal":"🇵🇹"
   };
   return map[country] || "🏁";
 }
@@ -462,134 +213,216 @@ function getTeamLogo(constructorId) {
   return TEAM_LOGOS[constructorId] || "";
 }
 
+function getTeamColor(constructorId) {
+  return TEAM_COLORS[constructorId] || "#e10600";
+}
+
+/* ============================================
+   FETCH — STANDINGS
+   ============================================ */
+async function fetchDriverStandings() {
+  const cached = cacheGet(`standings_${SEASON}`);
+  if (cached) return cached;
+  try {
+    const res = await fetch(`${API_BASE}/${SEASON}/driverstandings/?format=json`);
+    if (!res.ok) throw new Error(`API ${res.status}`);
+    const json = await res.json();
+    const list = json?.MRData?.StandingsTable?.StandingsLists?.[0]?.DriverStandings;
+    if (!list || list.length === 0) return [];
+    const normalized = list.map(s => ({
+      position: Number(s.position),
+      points: Number(s.points),
+      wins: Number(s.wins),
+      driverId: s.Driver?.driverId || "",
+      firstName: s.Driver?.givenName || "",
+      lastName: s.Driver?.familyName || "",
+      code: s.Driver?.code || "",
+      constructorId: s.Constructors?.[0]?.constructorId || "",
+      constructorName: s.Constructors?.[0]?.name || ""
+    }));
+    cacheSet(`standings_${SEASON}`, normalized);
+    return normalized;
+  } catch (err) {
+    console.error("❌ Driver standings:", err);
+    return [];
+  }
+}
+
+async function fetchConstructorStandings() {
+  const cached = cacheGet(`constructors_${SEASON}`);
+  if (cached) return cached;
+  try {
+    const res = await fetch(`${API_BASE}/${SEASON}/constructorstandings/?format=json`);
+    if (!res.ok) throw new Error(`API ${res.status}`);
+    const json = await res.json();
+    const list = json?.MRData?.StandingsTable?.StandingsLists?.[0]?.ConstructorStandings;
+    if (!list || list.length === 0) return [];
+    const normalized = list.map(s => ({
+      position: Number(s.position),
+      points: Number(s.points),
+      wins: Number(s.wins),
+      constructorId: s.Constructor?.constructorId || "",
+      constructorName: s.Constructor?.name || ""
+    }));
+    cacheSet(`constructors_${SEASON}`, normalized);
+    return normalized;
+  } catch (err) {
+    console.error("❌ Constructor standings:", err);
+    return [];
+  }
+}
+
+async function fetchRaceResults(round) {
+  const cached = cacheGet(`results_${SEASON}_${round}`);
+  if (cached) return cached;
+  try {
+    const res = await fetch(`${API_BASE}/${SEASON}/${round}/results/?format=json`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    const results = json?.MRData?.RaceTable?.Races?.[0]?.Results;
+    if (!results) return [];
+    const podium = results.slice(0, 3).map(r => ({
+      position: Number(r.position),
+      driverId: r.Driver?.driverId || "",
+      firstName: r.Driver?.givenName || "",
+      lastName: r.Driver?.familyName || "",
+      code: r.Driver?.code || "",
+      constructorId: r.Constructors?.[0]?.constructorId || "",
+      constructorName: r.Constructors?.[0]?.name || ""
+    }));
+    cacheSet(`results_${SEASON}_${round}`, podium);
+    return podium;
+  } catch { return []; }
+}
+
+async function fetchAllResults(races) {
+  const pastRaces = races.filter(isRacePast);
+  if (pastRaces.length === 0) return {};
+  const results = await Promise.all(pastRaces.map(async race => {
+    const podium = await fetchRaceResults(race.round);
+    return { round: race.round, podium };
+  }));
+  const map = {};
+  results.forEach(r => { map[r.round] = r.podium; });
+  return map;
+}
+
+async function fetchRaceCalendar() {
+  const cached = cacheGet(`calendar_${SEASON}`);
+  if (cached) return cached;
+  try {
+    const res = await fetch(`${API_BASE}/${SEASON}/races/?format=json`);
+    if (!res.ok) throw new Error(`API ${res.status}`);
+    const json = await res.json();
+    const raw = json?.MRData?.RaceTable?.Races;
+    if (!raw || raw.length === 0) throw new Error("Empty calendar");
+    const normalized = raw.map(r => {
+      const isSprint = Boolean(r.Sprint);
+      const sDate = (key) => {
+        const s = r[key];
+        return s ? toISO(s.date, s.time) : null;
+      };
+      return {
+        round: Number(r.round),
+        name: r.raceName,
+        circuit: r.Circuit?.circuitName || "Unknown Circuit",
+        country: r.Circuit?.Location?.country || "",
+        locality: r.Circuit?.Location?.locality || "",
+        isSprint,
+        sessions: {
+          fp1: sDate("FirstPractice"),
+          fp2: sDate("SecondPractice"),
+          fp3: sDate("ThirdPractice"),
+          sprintQuali: sDate("SprintQualifying"),
+          sprint: sDate("Sprint"),
+          quali: sDate("Qualifying"),
+          gp: sDate("Race") || (r.date && r.time ? toISO(r.date, r.time) : null)
+        }
+      };
+    });
+    cacheSet(`calendar_${SEASON}`, normalized);
+    return normalized;
+  } catch (err) {
+    console.error("❌ Calendar:", err);
+    return [];
+  }
+}
+
 /* ============================================
    BUILDERS — STANDINGS
    ============================================ */
 function buildStandingsTable(standings) {
   const table = document.createElement("table");
   table.className = "standings-table";
-
-  const thead = document.createElement("thead");
-  thead.innerHTML = `
-    <tr>
-      <th>Pos</th>
-      <th>Driver</th>
-      <th>Pts</th>
-      <th>Team</th>
-    </tr>
+  table.innerHTML = `
+    <thead>
+      <tr><th>Pos</th><th>Driver</th><th>Pts</th><th>Team</th></tr>
+    </thead>
+    <tbody></tbody>
   `;
-
-  const tbody = document.createElement("tbody");
-
+  const tbody = table.querySelector("tbody");
   standings.forEach(s => {
     const tr = document.createElement("tr");
     if (s.position === 1) tr.classList.add("leader");
-
     const logo = getTeamLogo(s.constructorId);
-    const logoHTML = logo
-      ? `<img src="${logo}" alt="${s.constructorName}" class="team-logo" onerror="this.style.display='none'">`
-      : "";
-
+    const logoHTML = logo ? `<img src="${logo}" alt="" class="team-logo" onerror="this.style.display='none'">` : "";
     tr.innerHTML = `
       <td>${s.position}</td>
-      <td>
-        <div class="driver-cell">
-          <span class="team-logo-wrap">${logoHTML}</span>
-          <span><strong>${s.code || s.lastName}</strong> ${s.firstName} ${s.lastName}</span>
-        </div>
-      </td>
+      <td><div class="driver-cell"><span class="team-logo-wrap">${logoHTML}</span><span><strong>${s.code || s.lastName}</strong> ${s.firstName} ${s.lastName}</span></div></td>
       <td>${s.points}</td>
-      <td style="color: var(--text-muted);">${s.constructorName}</td>
+      <td style="color:var(--text-muted);">${s.constructorName}</td>
     `;
-
     tbody.appendChild(tr);
   });
-
-  table.appendChild(thead);
-  table.appendChild(tbody);
   return table;
 }
 
 function buildConstructorsTable(standings) {
   const table = document.createElement("table");
   table.className = "standings-table";
-
-  const thead = document.createElement("thead");
-  thead.innerHTML = `
-    <tr>
-      <th>Pos</th>
-      <th>Team</th>
-      <th>Pts</th>
-      <th>Wins</th>
-    </tr>
+  table.innerHTML = `
+    <thead>
+      <tr><th>Pos</th><th>Team</th><th>Pts</th><th>Wins</th></tr>
+    </thead>
+    <tbody></tbody>
   `;
-
-  const tbody = document.createElement("tbody");
-
+  const tbody = table.querySelector("tbody");
   standings.forEach(s => {
     const tr = document.createElement("tr");
     if (s.position === 1) tr.classList.add("leader");
-
     const logo = getTeamLogo(s.constructorId);
-    const logoHTML = logo
-      ? `<img src="${logo}" alt="${s.constructorName}" class="team-logo" onerror="this.style.display='none'">`
-      : "";
-
+    const logoHTML = logo ? `<img src="${logo}" alt="" class="team-logo" onerror="this.style.display='none'">` : "";
     tr.innerHTML = `
       <td>${s.position}</td>
-      <td>
-        <div class="constructor-cell">
-          <span class="team-logo-wrap">${logoHTML}</span>
-          <span>${s.constructorName}</span>
-        </div>
-      </td>
+      <td><div class="constructor-cell"><span class="team-logo-wrap">${logoHTML}</span><span>${s.constructorName}</span></div></td>
       <td>${s.points}</td>
-      <td style="color: var(--text-muted);">${s.wins}</td>
+      <td style="color:var(--text-muted);">${s.wins}</td>
     `;
-
     tbody.appendChild(tr);
   });
-
-  table.appendChild(thead);
-  table.appendChild(tbody);
   return table;
 }
 
-/* ============================================
-   BUILDERS — RACE CARDS
-   ============================================ */
 function buildPodium(podium) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "podium";
-
-  const title = document.createElement("div");
-  title.className = "podium-title";
-  title.textContent = "Race Podium";
-  wrapper.appendChild(title);
-
+  const wrap = document.createElement("div");
+  wrap.className = "podium";
+  wrap.innerHTML = `<div class="podium-title">Race Podium</div>`;
   const list = document.createElement("div");
   list.className = "podium-list";
-
   podium.forEach(p => {
     const item = document.createElement("div");
     item.className = `podium-item p${p.position}`;
-
     const logo = getTeamLogo(p.constructorId);
-    const logoHTML = logo
-      ? `<img src="${logo}" alt="${p.constructorName}" class="team-logo-sm" onerror="this.style.display='none'">`
-      : "";
-
+    const logoHTML = logo ? `<img src="${logo}" alt="" class="team-logo-sm" onerror="this.style.display='none'">` : "";
     item.innerHTML = `
       <div class="podium-pos">P${p.position}</div>
       <div class="podium-driver">${p.code || p.lastName}</div>
       <div class="podium-team">${logoHTML}<span>${p.constructorName}</span></div>
     `;
-
     list.appendChild(item);
   });
-
-  wrapper.appendChild(list);
-  return wrapper;
+  wrap.appendChild(list);
+  return wrap;
 }
 
 function buildRaceCard(race, countdownTarget, isNext, isPast, podium) {
@@ -609,22 +442,14 @@ function buildRaceCard(race, countdownTarget, isNext, isPast, podium) {
 
   const header = document.createElement("div");
   header.className = "race-header";
-
-  const roundEl = document.createElement("span");
-  roundEl.className = "race-round";
-  roundEl.textContent = `Round ${race.round}`;
-
-  const flagEl = document.createElement("span");
-  flagEl.className = "race-flag";
-  flagEl.textContent = getFlagEmoji(race.country);
-
-  header.appendChild(roundEl);
-  header.appendChild(flagEl);
+  header.innerHTML = `
+    <span class="race-round">Round ${race.round}</span>
+    <span class="race-flag">${getFlagEmoji(race.country)}</span>
+  `;
 
   const name = document.createElement("h2");
   name.className = "race-name";
   name.textContent = race.name;
-
   if (race.isSprint) {
     const badge = document.createElement("span");
     badge.className = "sprint-badge";
@@ -638,31 +463,21 @@ function buildRaceCard(race, countdownTarget, isNext, isPast, podium) {
 
   const list = document.createElement("div");
   list.className = "session-list";
-
   const now = Date.now();
 
   Object.keys(SESSION_LABELS).forEach(key => {
     const iso = race.sessions[key];
     if (!iso) return;
-
-    const sessionTime = new Date(iso).getTime();
-    const isDone = !isNaN(sessionTime) && sessionTime < now;
-
+    const t = new Date(iso).getTime();
+    const isDone = !isNaN(t) && t < now;
     const row = document.createElement("div");
     row.className = "session-row";
     if (key === "gp") row.classList.add("gp");
     if (isDone) row.classList.add("done");
-
-    const label = document.createElement("span");
-    label.className = "session-label";
-    label.textContent = SESSION_LABELS[key];
-
-    const time = document.createElement("span");
-    time.className = "session-time";
-    time.textContent = formatLocal(iso);
-
-    row.appendChild(label);
-    row.appendChild(time);
+    row.innerHTML = `
+      <span class="session-label">${SESSION_LABELS[key]}</span>
+      <span class="session-time">${formatLocal(iso)}</span>
+    `;
     list.appendChild(row);
   });
 
@@ -671,25 +486,15 @@ function buildRaceCard(race, countdownTarget, isNext, isPast, podium) {
   card.appendChild(circuit);
   card.appendChild(list);
 
-  if (podium && podium.length > 0) {
-    card.appendChild(buildPodium(podium));
-  }
+  if (podium && podium.length > 0) card.appendChild(buildPodium(podium));
 
   if (countdownTarget && countdownTarget.round === race.round) {
     const box = document.createElement("div");
     box.className = "countdown-box";
-
-    const label = document.createElement("div");
-    label.className = "countdown-label";
-    label.textContent = `Next: ${SESSION_LABELS[countdownTarget.sessionKey]}`;
-
-    const value = document.createElement("div");
-    value.className = "countdown-value";
-    value.dataset.countdownTarget = countdownTarget.iso;
-    value.textContent = "—";
-
-    box.appendChild(label);
-    box.appendChild(value);
+    box.innerHTML = `
+      <span class="countdown-label">Next: ${SESSION_LABELS[countdownTarget.sessionKey]}</span>
+      <span class="countdown-value" data-countdown-target="${countdownTarget.iso}">—</span>
+    `;
     card.appendChild(box);
   }
 
@@ -698,22 +503,17 @@ function buildRaceCard(race, countdownTarget, isNext, isPast, podium) {
 
 function startCountdownTicker() {
   if (countdownTimer) clearInterval(countdownTimer);
-
-  const elements = document.querySelectorAll("[data-countdown-target]");
-  if (elements.length === 0) return;
-
-  const tick = () => {
-    elements.forEach(el => {
-      el.textContent = renderCountdown(el.dataset.countdownTarget);
-    });
-  };
-
+  const els = document.querySelectorAll("[data-countdown-target]");
+  if (els.length === 0) return;
+  const tick = () => els.forEach(el => {
+    el.textContent = renderCountdown(el.dataset.countdownTarget);
+  });
   tick();
   countdownTimer = setInterval(tick, 1000);
 }
 
 /* ============================================
-   RENDER — RACES / STANDINGS / HOME
+   RENDER
    ============================================ */
 function applyFilter(races, filter) {
   if (filter === "upcoming") return races.filter(isRaceUpcoming);
@@ -727,7 +527,6 @@ function renderRaces() {
   container.innerHTML = "";
 
   const filtered = applyFilter(allRaces, currentFilter);
-
   if (filtered.length === 0) {
     container.innerHTML = `<p class="empty-state">No races match this filter.</p>`;
     return;
@@ -735,7 +534,6 @@ function renderRaces() {
 
   const upcoming = getNextRaceWithUpcomingSession(allRaces);
   const nextRound = upcoming ? upcoming.race.round : null;
-
   const countdownTarget = upcoming
     ? { round: upcoming.race.round, sessionKey: upcoming.session.key, iso: upcoming.session.iso }
     : null;
@@ -755,12 +553,10 @@ function renderRaces() {
 function renderStandings(standings) {
   const container = document.getElementById("standings-container");
   if (!container) return;
-
   if (!standings || standings.length === 0) {
-    container.innerHTML = `<p class="empty-state">Standings unavailable. Retrying next load.</p>`;
+    container.innerHTML = `<p class="empty-state">Standings unavailable.</p>`;
     return;
   }
-
   container.innerHTML = "";
   container.appendChild(buildStandingsTable(standings));
 }
@@ -768,12 +564,10 @@ function renderStandings(standings) {
 function renderConstructors(standings) {
   const container = document.getElementById("constructors-container");
   if (!container) return;
-
   if (!standings || standings.length === 0) {
-    container.innerHTML = `<p class="empty-state">Constructor standings unavailable. Retrying next load.</p>`;
+    container.innerHTML = `<p class="empty-state">Constructor standings unavailable.</p>`;
     return;
   }
-
   container.innerHTML = "";
   container.appendChild(buildConstructorsTable(standings));
 }
@@ -781,104 +575,79 @@ function renderConstructors(standings) {
 function renderHome() {
   const upcoming = getNextRaceWithUpcomingSession(allRaces);
 
-  const nextRaceValue = document.getElementById("home-next-race-value");
-  const nextRaceSub = document.getElementById("home-next-race-sub");
-  const nextRaceCd = document.getElementById("home-next-race-countdown");
-
-  if (upcoming) {
-    nextRaceValue.textContent = upcoming.race.name;
-    nextRaceSub.textContent = `${SESSION_LABELS[upcoming.session.key]} · ${formatLocal(upcoming.session.iso)}`;
-    nextRaceCd.dataset.countdownTarget = upcoming.session.iso;
-    nextRaceCd.textContent = renderCountdown(upcoming.session.iso);
-  } else {
-    nextRaceValue.textContent = "Season complete";
-    nextRaceSub.textContent = "No upcoming sessions";
-    nextRaceCd.dataset.countdownTarget = "";
-    nextRaceCd.textContent = "—";
+  const nextVal = document.getElementById("home-next-race-value");
+  const nextSub = document.getElementById("home-next-race-sub");
+  const nextCd = document.getElementById("home-next-race-countdown");
+  if (upcoming && nextVal && nextSub && nextCd) {
+    nextVal.textContent = upcoming.race.name;
+    nextSub.textContent = `${SESSION_LABELS[upcoming.session.key]} · ${formatLocal(upcoming.session.iso)}`;
+    nextCd.dataset.countdownTarget = upcoming.session.iso;
+    nextCd.textContent = renderCountdown(upcoming.session.iso);
   }
 
-  const driverLeaderValue = document.getElementById("home-driver-leader-value");
-  const driverLeaderSub = document.getElementById("home-driver-leader-sub");
-  const driverLeader = allDrivers[0];
-
-  if (driverLeader) {
-    driverLeaderValue.textContent = `${driverLeader.code || driverLeader.lastName} · ${driverLeader.firstName} ${driverLeader.lastName}`;
-    driverLeaderSub.textContent = `${driverLeader.points} pts · ${driverLeader.constructorName}`;
-  } else {
-    driverLeaderValue.textContent = "—";
-    driverLeaderSub.textContent = "Standings unavailable";
+  const dlVal = document.getElementById("home-driver-leader-value");
+  const dlSub = document.getElementById("home-driver-leader-sub");
+  const dl = allDrivers[0];
+  if (dlVal && dlSub) {
+    if (dl) {
+      dlVal.textContent = `${dl.firstName} ${dl.lastName}`;
+      dlSub.textContent = `${dl.points} pts · ${dl.constructorName}`;
+    } else {
+      dlVal.textContent = "—";
+      dlSub.textContent = "Standings unavailable";
+    }
   }
 
-  const teamLeaderValue = document.getElementById("home-team-leader-value");
-  const teamLeaderSub = document.getElementById("home-team-leader-sub");
-  const teamLeader = allConstructors[0];
-
-  if (teamLeader) {
-    teamLeaderValue.textContent = teamLeader.constructorName;
-    teamLeaderSub.textContent = `${teamLeader.points} pts · ${teamLeader.wins} wins`;
-  } else {
-    teamLeaderValue.textContent = "—";
-    teamLeaderSub.textContent = "Standings unavailable";
+  const tlVal = document.getElementById("home-team-leader-value");
+  const tlSub = document.getElementById("home-team-leader-sub");
+  const tl = allConstructors[0];
+  if (tlVal && tlSub) {
+    if (tl) {
+      tlVal.textContent = tl.constructorName;
+      tlSub.textContent = `${tl.points} pts · ${tl.wins} wins`;
+    } else {
+      tlVal.textContent = "—";
+      tlSub.textContent = "Standings unavailable";
+    }
   }
 
-  const racesCountValue = document.getElementById("home-races-count-value");
-  const racesCountSub = document.getElementById("home-races-count-sub");
-
-  if (allRaces.length > 0) {
+  const rcVal = document.getElementById("home-races-count-value");
+  const rcSub = document.getElementById("home-races-count-sub");
+  if (rcVal && rcSub && allRaces.length > 0) {
     const completed = allRaces.filter(isRacePast).length;
-    racesCountValue.textContent = `${allRaces.length}`;
-    racesCountSub.textContent = `${completed} completed · ${allRaces.length - completed} remaining`;
-  } else {
-    racesCountValue.textContent = "—";
-    racesCountSub.textContent = "Calendar unavailable";
+    rcVal.textContent = `${completed}/${allRaces.length}`;
+    rcSub.textContent = `${allRaces.length - completed} races remaining`;
   }
 }
 
 /* ============================================
-   TRACKS MODULE
+   TRACKS
    ============================================ */
 async function fetchTracksData() {
   const cached = cacheGet("tracks_data");
-  if (cached) {
-    console.log("⚡ Track stats loaded from cache");
-    return cached;
-  }
-
+  if (cached) return cached;
   try {
-    console.log("📡 Fetching tracks-data.json...");
     const res = await fetch("tracks-data.json");
-    if (!res.ok) throw new Error(`tracks-data.json not found: ${res.status}`);
+    if (!res.ok) throw new Error(`tracks-data.json ${res.status}`);
     const json = await res.json();
-    console.log(`✅ Track stats loaded (${Object.keys(json).length} circuits)`);
     cacheSet("tracks_data", json);
     return json;
   } catch (err) {
-    console.error("❌ Failed to load tracks-data.json:", err);
+    console.error("❌ tracks-data.json:", err);
     return {};
   }
 }
 
 async function fetchTrackCalendar(season) {
   const cached = cacheGet(`tracks_calendar_${season}`);
-  if (cached) {
-    console.log(`⚡ Track calendar ${season} loaded from cache`);
-    return cached;
-  }
-
+  if (cached) return cached;
   try {
-    console.log(`📡 Fetching ${season} calendar for tracks...`);
     const res = await fetch(`${API_BASE}/${season}/races/?format=json`);
-    if (!res.ok) throw new Error(`API request failed: ${res.status}`);
-
+    if (!res.ok) throw new Error(`API ${res.status}`);
     const json = await res.json();
-    const rawRaces = json?.MRData?.RaceTable?.Races;
-
-    if (!rawRaces || rawRaces.length === 0) {
-      console.warn(`⚠️ API returned empty ${season} calendar`);
-      return [];
-    }
-
-    const normalized = rawRaces.map(r => ({
+    const raw = json?.MRData?.RaceTable?.Races;
+    if (!raw || raw.length === 0) return [];
+    const normalized = raw.map(r => ({
       round: Number(r.round),
       name: r.raceName,
       circuitId: r.Circuit?.circuitId || "",
@@ -887,23 +656,19 @@ async function fetchTrackCalendar(season) {
       locality: r.Circuit?.Location?.locality || "",
       date: r.date || null
     }));
-
-    console.log(`✅ Track calendar ${season} fetched (${normalized.length} races)`);
     cacheSet(`tracks_calendar_${season}`, normalized);
     return normalized;
   } catch (err) {
-    console.error(`❌ Failed to fetch ${season} track calendar:`, err);
+    console.error(`❌ Track calendar ${season}:`, err);
     return [];
   }
 }
 
 function findTrackKey(race) {
-  const combined = `${race.name} ${race.circuitId} ${race.circuitName}`.toLowerCase();
-
+  const combined = `${race.name} ${race.circuitId || ""} ${race.circuitName || ""}`.toLowerCase();
   for (const key of Object.keys(TRACK_SVG_MAP)) {
     if (combined.includes(key)) return key;
   }
-
   if (combined.includes("bahrain") || combined.includes("sakhir")) return "bahrain";
   if (combined.includes("jeddah") || combined.includes("saudi")) return "saudi";
   if (combined.includes("melbourne") || combined.includes("albert park")) return "australian";
@@ -912,9 +677,9 @@ function findTrackKey(race) {
   if (combined.includes("imola") || combined.includes("emilia")) return "emilia";
   if (combined.includes("monaco") || combined.includes("monte carlo")) return "monaco";
   if (combined.includes("catalunya") || combined.includes("spain") || combined.includes("barcelona")) return "spanish";
-  if (combined.includes("montreal") || combined.includes("canada") || combined.includes("villeneuve")) return "canadian";
+  if (combined.includes("montreal") || combined.includes("canada")) return "canadian";
   if (combined.includes("silverstone") || combined.includes("british")) return "british";
-  if (combined.includes("austria") || combined.includes("spielberg") || combined.includes("red bull ring")) return "austrian";
+  if (combined.includes("austria") || combined.includes("spielberg")) return "austrian";
   if (combined.includes("paul ricard") || combined.includes("french")) return "french";
   if (combined.includes("hungaroring") || combined.includes("hungary")) return "hungarian";
   if (combined.includes("spa") || combined.includes("belgian")) return "belgian";
@@ -923,46 +688,23 @@ function findTrackKey(race) {
   if (combined.includes("singapore") || combined.includes("marina bay")) return "singapore";
   if (combined.includes("suzuka") || combined.includes("japanese")) return "japanese";
   if (combined.includes("losail") || combined.includes("qatar")) return "qatar";
-  if (combined.includes("texas") || combined.includes("austin") || combined.includes("cota")) return "united states";
+  if (combined.includes("texas") || combined.includes("austin")) return "united states";
   if (combined.includes("mexico") || combined.includes("rodriguez")) return "mexican";
-  if (combined.includes("brazil") || combined.includes("interlagos") || combined.includes("sao paulo")) return "brazilian";
+  if (combined.includes("brazil") || combined.includes("interlagos")) return "brazilian";
   if (combined.includes("las vegas")) return "las vegas";
   if (combined.includes("abu dhabi") || combined.includes("yas marina")) return "abu dhabi";
-  if (combined.includes("portimao") || combined.includes("portugal") || combined.includes("algarve")) return "portuguese";
+  if (combined.includes("portimao") || combined.includes("portugal")) return "portuguese";
   if (combined.includes("shanghai") || combined.includes("china")) return "chinese";
-
   return null;
 }
 
 function buildTrackCard(race, stats) {
-  const trackKey = findTrackKey(race);
-  const svgFile = trackKey ? TRACK_SVG_MAP[trackKey] : null;
+  const key = findTrackKey(race);
+  const svgFile = key ? TRACK_SVG_MAP[key] : null;
   const svgPath = svgFile ? `images/tracks/${svgFile}` : null;
 
   const card = document.createElement("article");
   card.className = "track-card";
-
-  const mapDiv = document.createElement("div");
-  mapDiv.className = "track-map";
-
-  if (svgPath) {
-    const img = document.createElement("img");
-    img.src = svgPath;
-    img.alt = `${race.name} layout`;
-    img.style.width = "100%";
-    img.style.height = "100%";
-    img.style.objectFit = "contain";
-    img.style.filter = "drop-shadow(0 0 8px rgba(225, 6, 0, 0.45))";
-    img.onerror = () => {
-      mapDiv.innerHTML = `<span style="color: var(--text-muted); font-size: 0.7rem; text-align: center; font-family: var(--font-mono);">Track image not found<br>${svgFile}</span>`;
-    };
-    mapDiv.appendChild(img);
-  } else {
-    mapDiv.innerHTML = `<span style="color: var(--text-muted); font-size: 0.7rem; text-align: center; font-family: var(--font-mono);">No SVG mapped<br>${race.circuitName}</span>`;
-  }
-
-  const details = document.createElement("div");
-  details.className = "track-details";
 
   const round = document.createElement("div");
   round.className = "track-round";
@@ -976,83 +718,62 @@ function buildTrackCard(race, stats) {
   location.className = "track-location";
   location.innerHTML = `<span class="track-flag">${getFlagEmoji(race.country)}</span><span>${race.circuitName}${race.locality ? " · " + race.locality : ""}</span>`;
 
-  details.appendChild(round);
-  details.appendChild(name);
-  details.appendChild(location);
+  card.appendChild(round);
+  card.appendChild(name);
+  card.appendChild(location);
+
+  const mapDiv = document.createElement("div");
+  mapDiv.className = "track-map";
+  if (svgPath) {
+    const img = document.createElement("img");
+    img.src = svgPath;
+    img.alt = `${race.name} layout`;
+    img.onerror = () => { mapDiv.innerHTML = `<p class="empty-state">Track image not found</p>`; };
+    mapDiv.appendChild(img);
+  } else {
+    mapDiv.innerHTML = `<p class="empty-state">No SVG mapped</p>`;
+  }
+  card.appendChild(mapDiv);
 
   if (stats) {
     const statsRow = document.createElement("div");
     statsRow.className = "track-stats";
-
-    if (stats.length) {
-      statsRow.innerHTML += `
-        <div class="track-stat">
-          <span class="track-stat-label">Length</span>
-          <span class="track-stat-value">${stats.length}</span>
-        </div>
-      `;
-    }
-    if (stats.laps) {
-      statsRow.innerHTML += `
-        <div class="track-stat">
-          <span class="track-stat-label">Laps</span>
-          <span class="track-stat-value">${stats.laps}</span>
-        </div>
-      `;
-    }
-    if (stats.lapRecord) {
-      statsRow.innerHTML += `
-        <div class="track-stat">
-          <span class="track-stat-label">Lap Record</span>
-          <span class="track-stat-value">${stats.lapRecord}</span>
-        </div>
-      `;
-    }
-    if (stats.turns) {
-      statsRow.innerHTML += `
-        <div class="track-stat">
-          <span class="track-stat-label">Turns</span>
-          <span class="track-stat-value">${stats.turns}</span>
-        </div>
-      `;
-    }
-
-    details.appendChild(statsRow);
+    if (stats.length) statsRow.innerHTML += `<div class="track-stat"><span class="track-stat-label">Length</span><span class="track-stat-value">${stats.length}</span></div>`;
+    if (stats.laps) statsRow.innerHTML += `<div class="track-stat"><span class="track-stat-label">Laps</span><span class="track-stat-value">${stats.laps}</span></div>`;
+    if (stats.lapRecord) statsRow.innerHTML += `<div class="track-stat"><span class="track-stat-label">Lap Record</span><span class="track-stat-value">${stats.lapRecord}</span></div>`;
+    if (stats.turns) statsRow.innerHTML += `<div class="track-stat"><span class="track-stat-label">Turns</span><span class="track-stat-value">${stats.turns}</span></div>`;
+    card.appendChild(statsRow);
 
     if (stats.highlights && stats.highlights.length > 0) {
-      const highlights = document.createElement("div");
-      highlights.className = "track-highlights";
+      const hl = document.createElement("div");
+      hl.className = "track-highlights";
       stats.highlights.forEach(h => {
         const item = document.createElement("div");
         item.className = "track-highlight";
         item.innerHTML = `<span class="track-highlight-dot ${h.color}"></span><span>${h.label}</span>`;
-        highlights.appendChild(item);
+        hl.appendChild(item);
       });
-      details.appendChild(highlights);
+      card.appendChild(hl);
     }
   }
 
-  card.appendChild(mapDiv);
-  card.appendChild(details);
   return card;
 }
 
 function renderTrackCards(season) {
   const container = document.getElementById("tracks-container");
   if (!container) return;
-
   container.innerHTML = "";
 
   const races = tracksCalendar[season] || [];
-
   if (races.length === 0) {
     container.innerHTML = `<p class="empty-state">No circuit data available for ${season}.</p>`;
     return;
   }
 
   races.forEach((race, index) => {
-    const trackKey = findTrackKey(race);
-    const stats = trackKey ? tracksData[trackKey] : null;
+    const key = findTrackKey(race);
+    const stats = key ? tracksData[key] : null;
     const card = buildTrackCard(race, stats);
     card.style.animationDelay = `${Math.min(index * 30, 400)}ms`;
     container.appendChild(card);
@@ -1062,12 +783,10 @@ function renderTrackCards(season) {
 function setupSeasonToggle() {
   const toggle = document.getElementById("seasonToggle");
   if (!toggle) return;
-
   toggle.querySelectorAll(".season-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       const season = Number(btn.dataset.season);
       if (season === currentTrackSeason) return;
-
       currentTrackSeason = season;
       toggle.querySelectorAll(".season-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
@@ -1079,29 +798,18 @@ function setupSeasonToggle() {
 async function initTracks() {
   const container = document.getElementById("tracks-container");
   if (!container) return;
-
   container.innerHTML = `<p class="empty-state">Loading circuits...</p>`;
 
   tracksData = await fetchTracksData();
-
   const [cal2026, cal2027] = await Promise.all([
     fetchTrackCalendar(2026),
     fetchTrackCalendar(2027)
   ]);
-
   tracksCalendar[2026] = cal2026;
   tracksCalendar[2027] = cal2027;
 
   const btn2027 = document.querySelector('.season-btn[data-season="2027"]');
-  if (btn2027) {
-    if (cal2027 && cal2027.length > 0) {
-      btn2027.hidden = false;
-      console.log(`✅ 2027 calendar available (${cal2027.length} races) — showing tab`);
-    } else {
-      btn2027.hidden = true;
-      console.log("ℹ️ 2027 calendar not available — keeping tab hidden");
-    }
-  }
+  if (btn2027) btn2027.hidden = !(cal2027 && cal2027.length > 0);
 
   currentTrackSeason = 2026;
   const btn2026 = document.querySelector('.season-btn[data-season="2026"]');
@@ -1112,12 +820,492 @@ async function initTracks() {
 }
 
 /* ============================================
-   TAB SWITCHING (TOP NAV + MOBILE NAV + FOOTER)
+   LIVE MODULE — OPENF1 + JOLPI INTEGRATION
+   ============================================ */
+
+async function fetchLatestRaceFromJolpi() {
+  const cached = cacheGet("live_latest_race");
+  if (cached) {
+    console.log("⚡ Latest race loaded from cache");
+    return cached;
+  }
+
+  try {
+    console.log("📡 Fetching latest race from Jolpi...");
+    const res = await fetch(`${API_BASE}/current/last/results.json`);
+    if (!res.ok) throw new Error(`Jolpi ${res.status}`);
+    const json = await res.json();
+    const race = json?.MRData?.RaceTable?.Races?.[0];
+    if (!race) throw new Error("No latest race found");
+
+    const normalized = {
+      season: String(race.season || ""),
+      round: String(race.round || ""),
+      raceName: race.raceName || "Grand Prix",
+      circuitName: race.Circuit?.circuitName || "Unknown Circuit",
+      circuitId: race.Circuit?.circuitId || "",
+      country: race.Circuit?.Location?.country || "",
+      locality: race.Circuit?.Location?.locality || "",
+      date: race.date || "",
+      results: (race.Results || []).map(r => ({
+        position: Number(r.position),
+        positionText: r.positionText || String(r.position),
+        points: Number(r.points || 0),
+        grid: Number(r.grid || 0),
+        laps: Number(r.laps || 0),
+        status: r.status || "",
+        driverNumber: r.Driver?.permanentNumber || "",
+        driverId: r.Driver?.driverId || "",
+        firstName: r.Driver?.givenName || "",
+        lastName: r.Driver?.familyName || "",
+        code: r.Driver?.code || "",
+        constructorId: r.Constructors?.[0]?.constructorId || "",
+        constructorName: r.Constructors?.[0]?.name || "",
+        time: r.Time?.time || null,
+        fastestLap: r.FastestLap ? {
+          rank: Number(r.FastestLap.rank || 0),
+          lap: Number(r.FastestLap.lap || 0),
+          time: r.FastestLap.Time?.time || null,
+          avgSpeed: r.FastestLap.AverageSpeed?.speed || null
+        } : null
+      }))
+    };
+
+    cacheSet("live_latest_race", normalized);
+    console.log(`✅ Latest race: ${normalized.raceName} (Round ${normalized.round})`);
+    return normalized;
+  } catch (err) {
+    console.error("❌ Latest race from Jolpi:", err);
+    return null;
+  }
+}
+
+async function fetchOpenF1Session(year, round) {
+  const cacheKey = `live_session_${year}_${round}`;
+  const cached = cacheGet(cacheKey);
+  if (cached) {
+    console.log(`⚡ OpenF1 session ${year}/${round} from cache`);
+    return cached;
+  }
+
+  try {
+    console.log(`📡 Fetching OpenF1 session: ${year} round ${round}...`);
+    const res = await fetch(`${OPENF1_BASE}/sessions?year=${year}&round=${round}`);
+    if (!res.ok) throw new Error(`OpenF1 ${res.status}`);
+    const sessions = await res.json();
+    if (!Array.isArray(sessions) || sessions.length === 0) {
+      console.warn(`⚠️ No OpenF1 session for ${year}/${round}`);
+      return null;
+    }
+    const raceSession = sessions.find(s => s.session_name === "Race") || sessions[0];
+    console.log(`✅ OpenF1 session found: key ${raceSession.session_key}`);
+    cacheSet(cacheKey, raceSession);
+    return raceSession;
+  } catch (err) {
+    console.error("❌ OpenF1 session:", err);
+    return null;
+  }
+}
+
+async function fetchOpenF1Drivers(sessionKey) {
+  const cacheKey = `live_drivers_${sessionKey}`;
+  const cached = cacheGet(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const res = await fetch(`${OPENF1_BASE}/drivers?session_key=${sessionKey}`);
+    if (!res.ok) throw new Error(`OpenF1 ${res.status}`);
+    const drivers = await res.json();
+    cacheSet(cacheKey, drivers);
+    return drivers;
+  } catch (err) {
+    console.error("❌ OpenF1 drivers:", err);
+    return [];
+  }
+}
+
+async function fetchOpenF1Locations(sessionKey) {
+  const cacheKey = `live_locations_${sessionKey}`;
+  const cached = cacheGet(cacheKey);
+  if (cached) {
+    console.log(`⚡ Locations from cache (${Object.keys(cached.data || {}).length} drivers)`);
+    return cached;
+  }
+
+  try {
+    console.log("📡 Fetching OpenF1 locations (this may take a while)...");
+    const res = await fetch(`${OPENF1_BASE}/location?session_key=${sessionKey}`);
+    if (!res.ok) throw new Error(`OpenF1 ${res.status}`);
+    const raw = await res.json();
+    if (!Array.isArray(raw) || raw.length === 0) return null;
+
+    const grouped = {};
+    raw.forEach(point => {
+      const drv = point.driver_number;
+      if (!drv) return;
+      if (!grouped[drv]) grouped[drv] = [];
+      grouped[drv].push({
+        x: point.x,
+        y: point.y,
+        t: new Date(point.date).getTime()
+      });
+    });
+
+    Object.values(grouped).forEach(arr => arr.sort((a, b) => a.t - b.t));
+
+    let minT = Infinity, maxT = -Infinity;
+    Object.values(grouped).forEach(arr => {
+      if (arr.length) {
+        if (arr[0].t < minT) minT = arr[0].t;
+        if (arr[arr.length - 1].t > maxT) maxT = arr[arr.length - 1].t;
+      }
+    });
+
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    raw.forEach(p => {
+      if (p.x < minX) minX = p.x;
+      if (p.x > maxX) maxX = p.x;
+      if (p.y < minY) minY = p.y;
+      if (p.y > maxY) maxY = p.y;
+    });
+
+    const result = {
+      data: grouped,
+      timeRange: { start: minT, end: maxT },
+      bounds: { minX, maxX, minY, maxY }
+    };
+
+    console.log(`✅ Locations fetched: ${Object.keys(grouped).length} drivers, ${raw.length} points`);
+    cacheSet(cacheKey, result);
+    return result;
+  } catch (err) {
+    console.error("❌ OpenF1 locations:", err);
+    return null;
+  }
+}
+
+function findClosestPoint(points, targetTime) {
+  if (!points || points.length === 0) return null;
+  let lo = 0, hi = points.length - 1;
+  while (lo < hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    if (points[mid].t < targetTime) lo = mid + 1;
+    else hi = mid;
+  }
+  const after = points[lo];
+  const before = points[Math.max(0, lo - 1)];
+  if (!before) return after;
+  if (!after) return before;
+  return Math.abs(after.t - targetTime) < Math.abs(before.t - targetTime) ? after : before;
+}
+
+function renderLiveSessionHeader(race) {
+  const nameEl = document.getElementById("liveRaceName");
+  const typeEl = document.getElementById("liveSessionType");
+  const badge = document.getElementById("liveBadge");
+  const footer = document.getElementById("liveFooterRaceInfo");
+
+  if (nameEl) nameEl.textContent = race.raceName;
+  if (typeEl) typeEl.textContent = "Race · Replay";
+  if (badge) {
+    badge.textContent = "REPLAY";
+    badge.classList.add("historical");
+  }
+  if (footer) {
+    footer.textContent = `${race.season} · Round ${race.round} · ${race.circuitName} · ${race.date}`;
+  }
+
+  const meta = document.getElementById("liveLeaderboardMeta");
+  if (meta) meta.textContent = `${race.results.length} drivers · ${race.results.reduce((s, r) => s + r.laps, 0)} total laps`;
+}
+
+function renderLiveLeaderboard(results) {
+  const tbody = document.getElementById("liveTableBody");
+  if (!tbody) return;
+
+  if (!results || results.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10" class="live-empty">No race results available</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = results.map(r => {
+    const posClass = r.position === 1 ? "leader" : "";
+    const teamColor = getTeamColor(r.constructorId);
+    const tyreChar = "M";
+
+    return `
+      <tr class="${posClass}">
+        <td><span class="pos-badge">${r.position}</span></td>
+        <td>
+          <span class="driver-code" style="color:${teamColor}">${r.code || r.lastName.substring(0,3).toUpperCase()}</span>
+          <span class="driver-name">${r.firstName} ${r.lastName}</span>
+        </td>
+        <td>${r.position === 1 ? "—" : (r.time || (r.positionText === "R" ? "DNF" : "—"))}</td>
+        <td>—</td>
+        <td>—</td>
+        <td>—</td>
+        <td>—</td>
+        <td>—</td>
+        <td>${r.fastestLap?.time || "—"}</td>
+        <td><span class="tyre-badge medium">${tyreChar}</span></td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function createSvgEl(tag, attrs = {}) {
+  const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+  return el;
+}
+
+function mapCoord(x, y, bounds, svgW, svgH, padding) {
+  const { minX, maxX, minY, maxY } = bounds;
+  const rangeX = maxX - minX || 1;
+  const rangeY = maxY - minY || 1;
+  const scaleX = (svgW - padding * 2) / rangeX;
+  const scaleY = (svgH - padding * 2) / rangeY;
+  const scale = Math.min(scaleX, scaleY);
+  const offsetX = (svgW - rangeX * scale) / 2;
+  const offsetY = (svgH - rangeY * scale) / 2;
+  return {
+    cx: (x - minX) * scale + offsetX,
+    cy: svgH - ((y - minY) * scale + offsetY)
+  };
+}
+
+function drawTrackOutline(svg, points, bounds, svgW, svgH) {
+  const pathData = points.map((p, i) => {
+    const { cx, cy } = mapCoord(p.x, p.y, bounds, svgW, svgH, 60);
+    return `${i === 0 ? "M" : "L"}${cx.toFixed(2)},${cy.toFixed(2)}`;
+  }).join(" ");
+
+  const outer = createSvgEl("path", { d: pathData, class: "track-path" });
+  svg.appendChild(outer);
+  const inner = createSvgEl("path", { d: pathData, class: "track-path-inner" });
+  svg.appendChild(inner);
+}
+
+function drawCarDots(svg, driverPositions, drivers, bounds, svgW, svgH) {
+  svg.querySelectorAll(".car-dot").forEach(el => el.remove());
+
+  driverPositions.forEach(({ driver, point }) => {
+    const { cx, cy } = mapCoord(point.x, point.y, bounds, svgW, svgH, 60);
+    const teamColor = "#e10600";
+    const driverTeam = driver.team_name?.toLowerCase().replace(/\s+/g, "_") || "";
+    const color = getTeamColor(driverTeam) || teamColor;
+
+    const group = createSvgEl("g", {
+      class: "car-dot",
+      "data-driver": driver.driver_number
+    });
+
+    const bgWidth = 34;
+    const bgHeight = 14;
+    const bg = createSvgEl("rect", {
+      x: cx - bgWidth / 2,
+      y: cy - 18,
+      width: bgWidth,
+      height: bgHeight,
+      rx: 2,
+      fill: "rgba(0,0,0,0.85)",
+      stroke: color,
+      "stroke-width": 1
+    });
+    group.appendChild(bg);
+
+    const label = createSvgEl("text", {
+      x: cx,
+      y: cy - 8,
+      "text-anchor": "middle",
+      class: "car-dot-label",
+      fill: color,
+      "font-family": "'JetBrains Mono', monospace",
+      "font-size": "9",
+      "font-weight": "700"
+    });
+    label.textContent = driver.name_acronym || `#${driver.driver_number}`;
+    group.appendChild(label);
+
+    const dot = createSvgEl("circle", {
+      cx, cy,
+      r: 6,
+      fill: color,
+      stroke: "#fff",
+      "stroke-width": 1.5
+    });
+    dot.setAttribute("style", `filter: drop-shadow(0 0 6px ${color});`);
+    group.appendChild(dot);
+
+    svg.appendChild(group);
+  });
+}
+
+function renderLiveFrame(time) {
+  const { drivers, locations } = liveState;
+  if (!locations || !locations.data) return;
+
+  const svg = document.querySelector(".live-track-canvas svg");
+  if (!svg) return;
+
+  const svgW = 800;
+  const svgH = 600;
+  const bounds = locations.bounds;
+
+  const driverPositions = [];
+  Object.entries(locations.data).forEach(([driverNum, points]) => {
+    const point = findClosestPoint(points, time);
+    if (!point) return;
+    const driver = drivers.find(d => String(d.driver_number) === String(driverNum));
+    if (!driver) return;
+    driverPositions.push({ driver, point });
+  });
+
+  drawCarDots(svg, driverPositions, drivers, bounds, svgW, svgH);
+}
+
+function startLivePlayback() {
+  if (liveState.isPlaying) return;
+  liveState.isPlaying = true;
+
+  const playBtn = document.getElementById("livePlayBtn");
+  if (playBtn) {
+    playBtn.classList.add("playing");
+    playBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" /></svg>`;
+  }
+
+  let lastFrame = performance.now();
+
+  const loop = (now) => {
+    if (!liveState.isPlaying) return;
+
+    const delta = (now - lastFrame) * liveState.speed;
+    lastFrame = now;
+
+    liveState.currentTime += delta;
+
+    if (liveState.currentTime >= liveState.timeRange.end) {
+      liveState.currentTime = liveState.timeRange.end;
+      stopLivePlayback();
+      return;
+    }
+
+    renderLiveFrame(liveState.currentTime);
+    updateLapCounter();
+
+    liveState.animationId = requestAnimationFrame(loop);
+  };
+
+  liveState.animationId = requestAnimationFrame(loop);
+}
+
+function stopLivePlayback() {
+  liveState.isPlaying = false;
+  if (liveState.animationId) {
+    cancelAnimationFrame(liveState.animationId);
+    liveState.animationId = null;
+  }
+  const playBtn = document.getElementById("livePlayBtn");
+  if (playBtn) {
+    playBtn.classList.remove("playing");
+    playBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20" /></svg>`;
+  }
+}
+
+function toggleLivePlayback() {
+  if (liveState.isPlaying) stopLivePlayback();
+  else startLivePlayback();
+}
+
+function updateLapCounter() {
+  const elapsed = liveState.currentTime - liveState.timeRange.start;
+  const approxLapTime = 90000;
+  const totalLaps = liveState.race?.results?.[0]?.laps || 60;
+  const lap = Math.min(Math.floor(elapsed / approxLapTime) + 1, totalLaps);
+  const el = document.getElementById("liveLapCounter");
+  if (el) el.textContent = `Lap ${lap} / ${totalLaps}`;
+}
+
+async function initLive() {
+  const canvas = document.getElementById("liveTrackCanvas");
+  if (!canvas) return;
+
+  const race = await fetchLatestRaceFromJolpi();
+  if (!race) {
+    canvas.innerHTML = `<div class="live-loading"><span>⚠️ Could not fetch race data</span></div>`;
+    return;
+  }
+
+  liveState.race = race;
+  renderLiveSessionHeader(race);
+  renderLiveLeaderboard(race.results);
+
+  const session = await fetchOpenF1Session(race.season, race.round);
+  if (!session) {
+    canvas.innerHTML = `<div class="live-loading"><span>⚠️ No OpenF1 position data available for this race</span></div>`;
+    return;
+  }
+
+  liveState.session = session;
+
+  const drivers = await fetchOpenF1Drivers(session.session_key);
+  liveState.drivers = drivers;
+
+  const locations = await fetchOpenF1Locations(session.session_key);
+  if (!locations || !locations.data || Object.keys(locations.data).length === 0) {
+    canvas.innerHTML = `<div class="live-loading"><span>⚠️ No location data available</span></div>`;
+    return;
+  }
+
+  liveState.locations = locations;
+  liveState.timeRange = locations.timeRange;
+  liveState.currentTime = locations.timeRange.start;
+
+  canvas.innerHTML = "";
+  const svg = createSvgEl("svg", {
+    viewBox: "0 0 800 600",
+    preserveAspectRatio: "xMidYMid meet"
+  });
+  svg.style.width = "100%";
+  svg.style.height = "100%";
+  canvas.appendChild(svg);
+
+  let bestDriver = null, bestCount = 0;
+  Object.entries(locations.data).forEach(([drv, pts]) => {
+    if (pts.length > bestCount) {
+      bestCount = pts.length;
+      bestDriver = pts;
+    }
+  });
+
+  if (bestDriver) {
+    drawTrackOutline(svg, bestDriver, locations.bounds, 800, 600);
+  }
+
+  renderLiveFrame(liveState.currentTime);
+
+  const playBtn = document.getElementById("livePlayBtn");
+  if (playBtn) playBtn.addEventListener("click", toggleLivePlayback);
+
+  const speedBtn = document.getElementById("liveSpeedBtn");
+  if (speedBtn) {
+    speedBtn.addEventListener("click", () => {
+      const speeds = [1, 2, 4, 8];
+      const idx = speeds.indexOf(liveState.speed);
+      liveState.speed = speeds[(idx + 1) % speeds.length];
+      speedBtn.textContent = `${liveState.speed}x`;
+    });
+  }
+
+  setTimeout(startLivePlayback, 1000);
+}
+
+/* ============================================
+   TAB SWITCHING
    ============================================ */
 function switchTab(tab) {
   if (!tab) return;
 
-  // Update active states sa lahat ng nav types
   document.querySelectorAll(".top-link").forEach(b => {
     b.classList.toggle("active", b.dataset.tab === tab);
   });
@@ -1125,114 +1313,81 @@ function switchTab(tab) {
     b.classList.toggle("active", b.dataset.tab === tab);
   });
 
-  // Show target panel
   document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
   const panel = document.getElementById(`${tab}-tab`);
   if (panel) panel.classList.add("active");
 
-  // Scroll to top
   window.scrollTo({ top: 0, behavior: "smooth" });
-
-  // Close mobile nav if open
   closeMobileNav();
 
-  // Calendar scroll
-  if (tab === "calendar") {
-    setTimeout(scrollToNextRace, 300);
-  }
-
-  // Re-trigger scroll reveal
+  if (tab === "calendar") setTimeout(scrollToNextRace, 300);
   setTimeout(setupScrollReveal, 100);
+
+  if (tab === "live" && !liveState.session) {
+    initLive();
+  }
 }
 
 function setupTabs() {
-  // Top nav links
-  document.querySelectorAll(".top-link").forEach(btn => {
-    btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+  document.querySelectorAll(".top-link").forEach(b => {
+    b.addEventListener("click", () => switchTab(b.dataset.tab));
   });
-
-  // Mobile nav links
-  document.querySelectorAll(".mobile-link").forEach(btn => {
-    btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+  document.querySelectorAll(".mobile-link").forEach(b => {
+    b.addEventListener("click", () => switchTab(b.dataset.tab));
   });
-
-  // Footer links
-  document.querySelectorAll(".footer-link").forEach(btn => {
-    btn.addEventListener("click", () => switchTab(btn.dataset.tab));
-  });
-
-  // Hero action buttons ([data-goto])
-  document.querySelectorAll("[data-goto]").forEach(btn => {
-    btn.addEventListener("click", () => switchTab(btn.dataset.goto));
+  document.querySelectorAll("[data-goto]").forEach(b => {
+    b.addEventListener("click", () => switchTab(b.dataset.goto));
   });
 }
 
 /* ============================================
-   MOBILE NAV TOGGLE
+   MOBILE NAV
    ============================================ */
 function setupMobileNav() {
-  const menuBtn = document.getElementById("menuBtn");
-  const mobileNav = document.getElementById("mobileNav");
-
-  if (!menuBtn || !mobileNav) return;
-
-  menuBtn.addEventListener("click", () => {
-    const isOpen = mobileNav.classList.toggle("open");
-    menuBtn.classList.toggle("open", isOpen);
+  const btn = document.getElementById("menuBtn");
+  const nav = document.getElementById("mobileNav");
+  if (!btn || !nav) return;
+  btn.addEventListener("click", () => {
+    const open = nav.classList.toggle("open");
+    btn.classList.toggle("open", open);
   });
 }
 
 function closeMobileNav() {
-  const menuBtn = document.getElementById("menuBtn");
-  const mobileNav = document.getElementById("mobileNav");
-
-  if (mobileNav) mobileNav.classList.remove("open");
-  if (menuBtn) menuBtn.classList.remove("open");
+  const btn = document.getElementById("menuBtn");
+  const nav = document.getElementById("mobileNav");
+  if (nav) nav.classList.remove("open");
+  if (btn) btn.classList.remove("open");
 }
 
 /* ============================================
-   TOP NAV SCROLL STATE
+   NAV SCROLL
    ============================================ */
 function setupNavScroll() {
   const nav = document.getElementById("topNav");
   if (!nav) return;
-
-  const updateNav = () => {
-    if (window.scrollY > 40) {
-      nav.classList.add("scrolled");
-    } else {
-      nav.classList.remove("scrolled");
-    }
-  };
-
-  updateNav();
-  window.addEventListener("scroll", updateNav, { passive: true });
+  const update = () => nav.classList.toggle("scrolled", window.scrollY > 40);
+  update();
+  window.addEventListener("scroll", update, { passive: true });
 }
 
 /* ============================================
    SCROLL REVEAL
    ============================================ */
 let revealObserver = null;
-
 function setupScrollReveal() {
-  const elements = document.querySelectorAll("[data-reveal]");
-  if (!elements.length) return;
-
+  const els = document.querySelectorAll("[data-reveal]");
+  if (!els.length) return;
   if (revealObserver) revealObserver.disconnect();
-
   revealObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("revealed");
-        revealObserver.unobserve(entry.target);
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add("revealed");
+        revealObserver.unobserve(e.target);
       }
     });
-  }, {
-    threshold: 0.12,
-    rootMargin: "0px 0px -50px 0px"
-  });
-
-  elements.forEach(el => revealObserver.observe(el));
+  }, { threshold: 0.1, rootMargin: "0px 0px -40px 0px" });
+  els.forEach(el => revealObserver.observe(el));
 }
 
 /* ============================================
@@ -1249,9 +1404,6 @@ function setupFilters() {
   });
 }
 
-/* ============================================
-   SCROLL TO NEXT RACE
-   ============================================ */
 function scrollToNextRace() {
   const next = document.querySelector(".race-card.next");
   if (next && currentFilter === "all") {
@@ -1263,13 +1415,11 @@ function scrollToNextRace() {
    INIT
    ============================================ */
 async function init() {
-  // Setup nav & reveal
   setupNavScroll();
   setupMobileNav();
   setupTabs();
   setupScrollReveal();
 
-  // Race calendar skeleton
   const container = document.getElementById("race-container");
   if (container) {
     container.innerHTML = `
@@ -1279,7 +1429,6 @@ async function init() {
     `;
   }
 
-  // Fetch all data
   const [races, standings, constructors] = await Promise.all([
     fetchRaceCalendar(),
     fetchDriverStandings(),
@@ -1293,7 +1442,7 @@ async function init() {
   window.F1_RESULTS = {};
 
   if (container && races.length === 0) {
-    container.innerHTML = `<p class="empty-state" style="color:var(--red);">Failed to load calendar. Check console.</p>`;
+    container.innerHTML = `<p class="empty-state" style="color:var(--red);">Failed to load calendar.</p>`;
   } else if (races.length > 0) {
     renderRaces();
     setupFilters();
@@ -1305,18 +1454,13 @@ async function init() {
     setTimeout(scrollToNextRace, 500);
   }
 
-  // Render standings & constructors
   renderStandings(standings);
   renderConstructors(constructors);
   renderHome();
 
-  // Start ticker
   startCountdownTicker();
-
-  // Tracks module
   await initTracks();
 
-  // Re-run reveal after everything is rendered
   setTimeout(setupScrollReveal, 200);
 }
 

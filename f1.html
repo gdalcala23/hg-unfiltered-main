@@ -11,7 +11,9 @@
 </head>
 <body>
 
-  <!-- TOP NAV -->
+  <!-- ============================================
+       TOP NAV
+       ============================================ -->
   <header class="top-nav" id="topNav">
     <a href="index.html" class="nav-brand">
       <div class="nav-mark">
@@ -31,21 +33,26 @@
     <nav class="top-nav-links">
       <button class="top-link active" data-tab="home">Home</button>
       <button class="top-link" data-tab="calendar">Calendar</button>
+      <button class="top-link" data-tab="live">Live</button>
       <button class="top-link" data-tab="tracks">Tracks</button>
       <button class="top-link" data-tab="standings">Drivers</button>
       <button class="top-link" data-tab="constructors">Teams</button>
     </nav>
 
-    <button class="nav-menu-btn" id="menuBtn" aria-label="Menu">
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
+    <div class="nav-meta">
+      <button class="nav-menu-btn" id="menuBtn" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
   </header>
 
+  <!-- Mobile nav -->
   <div class="mobile-nav" id="mobileNav">
     <button class="mobile-link active" data-tab="home">Home</button>
     <button class="mobile-link" data-tab="calendar">Calendar</button>
+    <button class="mobile-link" data-tab="live">Live</button>
     <button class="mobile-link" data-tab="tracks">Tracks</button>
     <button class="mobile-link" data-tab="standings">Drivers</button>
     <button class="mobile-link" data-tab="constructors">Teams</button>
@@ -58,7 +65,6 @@
          ============================================ -->
     <section id="home-tab" class="tab-panel active">
 
-      <!-- HERO PARALLAX -->
       <div class="hero-parallax">
         <div class="hero-parallax-bg" style="background-image: url('f1-images/F1-3.jpg');"></div>
         <div class="hero-parallax-overlay"></div>
@@ -96,7 +102,6 @@
         </div>
       </div>
 
-      <!-- STATS STRIP -->
       <section class="stats-strip">
         <div class="stats-inner">
           <div class="stat-item" data-reveal>
@@ -122,7 +127,6 @@
         </div>
       </section>
 
-      <!-- FEATURE SPLIT -->
       <section class="feature-split">
         <div class="feature-image" style="background-image: url('f1-images/F1-4.jpg');" data-reveal>
           <div class="feature-image-label">
@@ -165,7 +169,6 @@
         </div>
       </section>
 
-      <!-- PARALLAX BREAK -->
       <section class="parallax-break" style="background-image: url('f1-images/f1-4.webp');">
         <div class="parallax-break-overlay"></div>
         <div class="parallax-break-content" data-reveal>
@@ -181,7 +184,6 @@
         </div>
       </section>
 
-      <!-- LIVE DATA GRID -->
       <section class="live-section">
         <div class="live-header" data-reveal>
           <span class="section-tag">
@@ -226,7 +228,6 @@
         </div>
       </section>
 
-      <!-- PARTNERS STRIP — pinalitan ng F1 teams -->
       <section class="partners-section">
         <div class="partners-inner" data-reveal>
           <span class="partners-tag">Coverage</span>
@@ -244,7 +245,6 @@
         </div>
       </section>
 
-      <!-- CTA CLOSING -->
       <section class="cta-section" style="background-image: url('f1-images/F1-5.webp');">
         <div class="cta-overlay"></div>
         <div class="cta-content" data-reveal>
@@ -267,7 +267,9 @@
 
     </section>
 
-    <!-- TAB 2 — CALENDAR -->
+    <!-- ============================================
+         TAB 2 — CALENDAR
+         ============================================ -->
     <section id="calendar-tab" class="tab-panel">
       <div class="tab-header">
         <div class="tab-title-group">
@@ -286,7 +288,92 @@
       <div id="race-container"></div>
     </section>
 
-    <!-- TAB 3 — TRACKS -->
+    <!-- ============================================
+         TAB 3 — LIVE
+         ============================================ -->
+    <section id="live-tab" class="tab-panel">
+      <div class="tab-header live-tab-header">
+        <div class="tab-title-group">
+          <span class="section-tag">
+            <span class="tag-line"></span>
+            Race Analysis
+          </span>
+          <h2 class="tab-title">Live Timing</h2>
+        </div>
+        <div class="live-controls" id="liveControls">
+          <button class="live-btn" id="livePlayBtn" title="Play/Pause">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="6 4 20 12 6 20" />
+            </svg>
+          </button>
+          <button class="live-btn" id="liveSpeedBtn" title="Speed">1x</button>
+        </div>
+      </div>
+
+      <div class="live-race-shell">
+        <div class="live-session-bar" id="liveSessionBar">
+          <div class="live-session-left">
+            <span class="live-badge" id="liveBadge">LIVE</span>
+            <span class="live-race-name" id="liveRaceName">Loading...</span>
+            <span class="live-sep">·</span>
+            <span class="live-session-type" id="liveSessionType">Race</span>
+          </div>
+          <div class="live-session-right">
+            <span class="live-lap-counter" id="liveLapCounter">Lap — / —</span>
+            <span class="live-status-pill" id="liveStatusPill">Track Clear</span>
+          </div>
+        </div>
+
+        <div class="live-track-wrap">
+          <div class="live-track-head">
+            <span class="live-track-label" id="liveTrackLabel">Circuit Map</span>
+            <span class="live-track-hint">Auto-drawn from position data</span>
+          </div>
+          <div class="live-track-canvas" id="liveTrackCanvas">
+            <div class="live-loading" id="liveTrackLoading">
+              <div class="live-loading-spinner"></div>
+              <span>Loading circuit data...</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="live-leaderboard-wrap">
+          <div class="live-leaderboard-head">
+            <span class="live-leaderboard-title">Leaderboard</span>
+            <span class="live-leaderboard-meta" id="liveLeaderboardMeta">—</span>
+          </div>
+          <div class="live-table-wrap">
+            <table class="live-table" id="liveTable">
+              <thead>
+                <tr>
+                  <th class="col-pos">Pos</th>
+                  <th class="col-driver">Driver</th>
+                  <th class="col-gap">Gap</th>
+                  <th class="col-int">Int</th>
+                  <th class="col-speed">Speed</th>
+                  <th class="col-s1">S1</th>
+                  <th class="col-s2">S2</th>
+                  <th class="col-s3">S3</th>
+                  <th class="col-lap">Last Lap</th>
+                  <th class="col-tyre">Tyre</th>
+                </tr>
+              </thead>
+              <tbody id="liveTableBody">
+                <tr><td colspan="10" class="live-empty">Loading race data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="live-footer-meta" id="liveFooterMeta">
+          <span id="liveFooterRaceInfo">—</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================
+         TAB 4 — TRACKS
+         ============================================ -->
     <section id="tracks-tab" class="tab-panel">
       <div class="tab-header">
         <div class="tab-title-group">
@@ -306,7 +393,9 @@
       </div>
     </section>
 
-    <!-- TAB 4 — STANDINGS -->
+    <!-- ============================================
+         TAB 5 — STANDINGS
+         ============================================ -->
     <section id="standings-tab" class="tab-panel">
       <div class="tab-header">
         <div class="tab-title-group">
@@ -322,7 +411,9 @@
       </div>
     </section>
 
-    <!-- TAB 5 — CONSTRUCTORS -->
+    <!-- ============================================
+         TAB 6 — CONSTRUCTORS
+         ============================================ -->
     <section id="constructors-tab" class="tab-panel">
       <div class="tab-header">
         <div class="tab-title-group">
@@ -338,24 +429,9 @@
       </div>
     </section>
 
-    <!-- FOOTER -->
-    <footer class="site-footer">
-      <div class="footer-inner">
-        <div class="footer-brand">
-          <span class="nav-title">HG<span class="accent">-</span>Unfiltered</span>
-          <span class="footer-sub">F1 Dashboard</span>
-        </div>
-        <div class="footer-links">
-          <button class="footer-link" data-tab="home">Home</button>
-          <button class="footer-link" data-tab="calendar">Calendar</button>
-          <button class="footer-link" data-tab="tracks">Tracks</button>
-          <button class="footer-link" data-tab="standings">Drivers</button>
-          <button class="footer-link" data-tab="constructors">Teams</button>
-        </div>
-        <div class="footer-note">
-          made with ❤️ for us
-        </div>
-      </div>
+    <!-- MINIMAL FOOTER — "made with ❤ for us" lang -->
+    <footer class="site-footer-minimal">
+      <p>made with <span class="heart">❤</span> for us</p>
     </footer>
 
   </main>

@@ -710,7 +710,7 @@ button {
 }
 
 /* ============================================
-   LIVE SECTION
+   LIVE SECTION (Home bento cards)
    ============================================ */
 .live-section {
   padding: 6rem 5rem;
@@ -1654,55 +1654,168 @@ button {
 }
 
 /* ============================================
-   FOOTER
+   MINIMAL FOOTER
    ============================================ */
-.site-footer {
+.site-footer-minimal {
   background: var(--black-2);
   border-top: 1px solid var(--line);
-  padding: 3.5rem 5rem 2.5rem;
-}
-
-.footer-inner {
-  max-width: 1400px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
+  padding: 2rem 2.5rem;
   text-align: center;
 }
 
-.footer-brand {
-  display: flex;
-  flex-direction: column;
+.site-footer-minimal p {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+
+.site-footer-minimal .heart {
+  color: var(--red);
+  margin: 0 0.2rem;
+  display: inline-block;
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.15); }
+}
+
+/* ============================================
+   LIVE TAB — RACE ANALYSIS DASHBOARD
+   ============================================ */
+
+.live-tab-header {
   align-items: center;
-  gap: 0.35rem;
 }
 
-.footer-brand .nav-title {
-  font-size: 1.5rem;
+.live-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 }
 
-.footer-sub {
+.live-btn {
+  background: var(--black-3);
+  border: 1px solid var(--line);
+  color: var(--text-soft);
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
   font-family: var(--font-display);
-  font-size: 0.62rem;
+  font-size: 0.8rem;
   font-weight: 700;
   font-style: italic;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--text-muted);
+  transition: all var(--ease);
+}
+.live-btn:hover { border-color: var(--red); color: #fff; }
+.live-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.live-btn.playing svg { fill: #fff; }
+
+#liveSpeedBtn { width: auto; padding: 0 1rem; }
+
+.live-race-shell {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem 5rem 6rem;
 }
 
-.footer-links {
+.live-session-bar {
   display: flex;
-  gap: 1.5rem;
+  align-items: center;
+  justify-content: space-between;
   flex-wrap: wrap;
-  justify-content: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: var(--black-3);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--red);
+  margin-bottom: 1.5rem;
 }
 
-.footer-link {
-  background: transparent;
-  border: none;
+.live-session-left, .live-session-right {
+  display: flex; align-items: center; gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--red);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0.28rem 0.65rem;
+  border-radius: 2px;
+  animation: livePulse 2s ease-in-out infinite;
+}
+
+.live-badge.historical { background: var(--silver); color: var(--black); animation: none; }
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.live-race-name {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 900;
+  font-style: italic;
+  color: #fff;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.live-session-type, .live-sep { color: var(--text-muted); font-family: var(--font-mono); font-size: 0.75rem; }
+
+.live-lap-counter {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  letter-spacing: 0.05em;
+}
+
+.live-status-pill {
+  background: rgba(0, 210, 190, 0.15);
+  color: var(--teal);
+  border: 1px solid rgba(0, 210, 190, 0.3);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0.28rem 0.65rem;
+  border-radius: 2px;
+}
+
+/* TRACK MAP */
+.live-track-wrap {
+  background: #050505;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.live-track-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--black-3);
+}
+
+.live-track-label {
   font-family: var(--font-display);
   font-size: 0.7rem;
   font-weight: 700;
@@ -1710,21 +1823,257 @@ button {
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--text-muted);
-  transition: color var(--ease);
 }
 
-.footer-link:hover {
-  color: var(--red);
-}
-
-.footer-note {
+.live-track-hint {
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   color: var(--text-muted);
   letter-spacing: 0.05em;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--line);
+}
+
+.live-track-canvas {
+  position: relative;
   width: 100%;
+  aspect-ratio: 16 / 10;
+  min-height: 400px;
+  max-height: 620px;
+  background: radial-gradient(circle at center, #0d0d0d 0%, #050505 100%);
+}
+
+.live-track-canvas svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.live-track-canvas .track-path {
+  fill: none;
+  stroke: #2a2a2a;
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.live-track-canvas .track-path-inner {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.15);
+  stroke-width: 3;
+  stroke-dasharray: 4 6;
+  stroke-linecap: round;
+}
+
+.live-track-canvas .car-dot {
+  transition: transform 0.8s linear;
+  cursor: pointer;
+}
+
+.live-track-canvas .car-dot circle {
+  fill: var(--red);
+  stroke: #fff;
+  stroke-width: 1.5;
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+.live-track-canvas .car-dot text {
+  fill: #fff;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  pointer-events: none;
+}
+
+.live-track-canvas .car-dot-label {
+  fill: #000;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.live-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.live-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--line-strong);
+  border-top-color: var(--red);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* LEADERBOARD */
+.live-leaderboard-wrap {
+  background: var(--black-3);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.live-leaderboard-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--black-4);
+}
+
+.live-leaderboard-title {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.live-leaderboard-meta {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.live-table-wrap {
+  overflow-x: auto;
+}
+
+.live-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  min-width: 900px;
+}
+
+.live-table th {
+  text-align: left;
+  padding: 0.75rem 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+  border-bottom: 1px solid var(--line);
+  background: var(--black-4);
+  white-space: nowrap;
+}
+
+.live-table td {
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+
+.live-table tbody tr {
+  transition: background var(--ease);
+}
+
+.live-table tbody tr:hover td {
+  background: var(--black-4);
+}
+
+.live-table tbody tr.leader td {
+  color: #fff;
+  font-weight: 600;
+}
+
+.col-pos { width: 3rem; text-align: center; }
+.col-driver { min-width: 100px; }
+.col-gap, .col-int, .col-s1, .col-s2, .col-s3, .col-lap, .col-speed { text-align: center; font-family: var(--font-mono); }
+.col-tyre { text-align: center; width: 3rem; }
+
+.live-table .pos-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--black-4);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-soft);
+}
+
+.live-table .leader .pos-badge { background: var(--red); color: #fff; }
+
+.live-table .driver-code {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.05em;
+}
+
+.live-table .driver-name {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-left: 0.5rem;
+}
+
+.live-table .tyre-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.tyre-badge.soft { background: #e10600; }
+.tyre-badge.medium { background: #ffcf40; color: #000; }
+.tyre-badge.hard { background: #fff; color: #000; }
+.tyre-badge.intermediate { background: #22c55e; }
+.tyre-badge.wet { background: #0066ff; }
+
+.live-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 3rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.live-footer-meta {
+  padding: 0.85rem 1.25rem;
+  border-top: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  text-align: center;
+  background: var(--black-3);
+  margin-top: 1rem;
+  border-radius: 4px;
 }
 
 /* ============================================
@@ -1775,8 +2124,8 @@ button {
     padding-right: 2.5rem;
   }
 
-  .site-footer {
-    padding: 3rem 2.5rem 2rem;
+  .site-footer-minimal {
+    padding: 2rem 2.5rem;
   }
 
   .feature-split {
@@ -1819,6 +2168,15 @@ button {
 
   .track-stats {
     justify-content: space-between;
+  }
+
+  .live-race-shell {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+
+  .live-track-canvas {
+    min-height: 320px;
   }
 }
 
@@ -2010,20 +2368,58 @@ button {
     letter-spacing: 0.15em;
   }
 
-  .site-footer {
-    padding: 2.5rem 1.5rem 1.5rem;
+  .site-footer-minimal {
+    padding: 1.75rem 1.5rem;
   }
 
-  .footer-brand .nav-title {
-    font-size: 1.25rem;
+  .site-footer-minimal p {
+    font-size: 0.65rem;
   }
 
-  .footer-links {
-    gap: 0.85rem;
+  /* Live tab mobile */
+  .live-race-shell {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    padding-bottom: 4rem;
   }
 
-  .footer-link {
-    font-size: 0.62rem;
-    letter-spacing: 0.15em;
+  .live-session-bar {
+    padding: 0.85rem 1rem;
+  }
+
+  .live-race-name {
+    font-size: 0.9rem;
+  }
+
+  .live-lap-counter {
+    font-size: 0.68rem;
+  }
+
+  .live-track-canvas {
+    min-height: 260px;
+  }
+
+  .live-table {
+    font-size: 0.72rem;
+    min-width: 780px;
+  }
+
+  .live-table th,
+  .live-table td {
+    padding: 0.5rem 0.55rem;
+  }
+
+  .live-table th {
+    font-size: 0.52rem;
+    letter-spacing: 0.1em;
+  }
+
+  .live-table .driver-name {
+    display: none;
+  }
+
+  .live-controls {
+    width: 100%;
+    justify-content: flex-end;
   }
 }
