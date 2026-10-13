@@ -332,7 +332,8 @@ async function uploadToImgBB(file) {
     throw new Error(`Invalid response from ImgBB (status ${res.status}): ${text.slice(0, 100)}`);
   }
 
-  if (!res.ok || json?.status_code !== 200 || !json?.data?.url) {
+  // ✅ FIX: ImgBB uses `success: true` and `status: 200`, NOT `status_code`
+  if (!res.ok || json?.success !== true || !json?.data?.url) {
     const errMsg = json?.error?.message || `HTTP ${res.status}`;
     console.error("❌ ImgBB error:", json);
     throw new Error(`ImgBB: ${errMsg}`);
