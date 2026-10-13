@@ -294,13 +294,55 @@ function subscribeToBoard(boardId) {
 
 /* ---------- ImgBB ---------- */
 async function uploadToImgBB(file) {
+  if (!file) throw new Error("No file provided");
+
+  const MAX_SIZE = 32 * 1024 * 1024;
+  if (file.size > MAX_SIZE) {
+    throw new Error(`File too large: ${(file.size / 1024 / 1024).toFixed(1)} MB (max 32 MB)`);
+  }
+
+  const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/bmp", "image/tiff", "image/heic", "image/heif"];
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    throw new Error(`Unsupported format: ${file.type}`);
+  }
+
   const form = new FormData();
   form.append("image", file);
-  const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: form });
-  if (!res.ok) throw new Error(`ImgBB upload failed: ${res.status}`);
-  const json = await res.json();
-  if (!json?.data?.url) throw new Error("ImgBB returned no URL");
-  return { url: json.data.url, deleteUrl: json.data.delete_url || null };
+  form.append("name", `hg_${Date.now()}`);
+
+  const url = `https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`;
+
+  let res;
+  try {
+    res = await fetch(url, {
+      method: "POST",
+      body: form,
+    });
+  } catch (networkErr) {
+    console.error("❌ Network error:", networkErr);
+    throw new Error("Network error — check your connection or ad blocker");
+  }
+
+  let json;
+  try {
+    json = await res.json();
+  } catch (parseErr) {
+    console.error("❌ Response parse error:", parseErr);
+    const text = await res.text().catch(() => "");
+    throw new Error(`Invalid response from ImgBB (status ${res.status}): ${text.slice(0, 100)}`);
+  }
+
+  if (!res.ok || json?.status_code !== 200 || !json?.data?.url) {
+    const errMsg = json?.error?.message || `HTTP ${res.status}`;
+    console.error("❌ ImgBB error:", json);
+    throw new Error(`ImgBB: ${errMsg}`);
+  }
+
+  console.log("✅ Uploaded:", json.data.url);
+  return {
+    url: json.data.url,
+    deleteUrl: json.data.delete_url || null,
+  };
 }
 
 function extractDeleteHash(deleteUrl) {
@@ -605,17 +647,42 @@ function closeModal() {
 
 async function sharePost() {
   if (!pendingFile) return;
+
   const btn = document.getElementById("ig-post-btn");
   const caption = document.getElementById("ig-caption-input").value.trim();
   const collectionName = pendingModalTarget === "ours" ? "us_photos" : "photos";
+
   btn.disabled = true;
   btn.textContent = "Uploading...";
+
   try {
+    console.log("📤 Starting upload:", {
+      name: pendingFile.name,
+      size: `${(pendingFile.size / 1024 / 1024).toFixed(2)} MB`,
+      type: pendingFile.type,
+    });
+
     const uploaded = await uploadToImgBB(pendingFile);
-    await addDoc(collection(db, collectionName), { url: uploaded.url, deleteUrl: uploaded.deleteUrl, caption, date: serverTimestamp(), saved: false });
+    console.log("✅ ImgBB upload OK:", uploaded.url);
+
+    await addDoc(collection(db, collectionName), {
+      url: uploaded.url,
+      deleteUrl: uploaded.deleteUrl,
+      caption,
+      date: serverTimestamp(),
+      saved: false,
+    });
+
+    console.log("✅ Firestore doc created");
     closeModal();
-  } catch (err) { console.error("Share failed:", err); alert("Upload failed. Try again."); }
-  finally { btn.disabled = false; btn.textContent = "Share"; }
+
+  } catch (err) {
+    console.error("❌ Share failed:", err);
+    alert(`Upload failed:\n\n${err.message}\n\nCheck browser console (F12) for details.`);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Share";
+  }
 }
 
 async function toggleSave(photoId, save) {
