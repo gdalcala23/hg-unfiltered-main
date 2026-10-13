@@ -502,48 +502,82 @@ function setupUpload() {
   if (confirmDeleteBtn) confirmDeleteBtn.addEventListener("click", confirmDelete);
 }
 
-function setupSidebarNav() {
-  const navItems = document.querySelectorAll(".burger-nav-item[data-section]");
+/* ============================================
+   TOPNAV — NEW
+   ============================================ */
+function setupTopnav() {
+  const navLinks = document.querySelectorAll(".burger-topnav-link[data-section], .burger-mobile-link[data-section]");
   const sections = document.querySelectorAll(".burger-section");
-  const layout = document.querySelector(".burger-layout");
-  const overlay = document.getElementById("burgerOverlay");
-  const hamburger = document.getElementById("burgerHamburger");
 
-  navItems.forEach(item => {
-    item.addEventListener("click", () => {
-      const target = item.dataset.section;
+  navLinks.forEach(link => {
+    link.addEventListener("click", () => {
+      const target = link.dataset.section;
 
-      navItems.forEach(n => n.classList.remove("active"));
-      item.classList.add("active");
+      document.querySelectorAll(".burger-topnav-link").forEach(n => n.classList.remove("active"));
+      document.querySelectorAll(".burger-mobile-link").forEach(n => n.classList.remove("active"));
+
+      const activeTopnav = document.querySelector(`.burger-topnav-link[data-section="${target}"]`);
+      const activeMobile = document.querySelector(`.burger-mobile-link[data-section="${target}"]`);
+      if (activeTopnav) activeTopnav.classList.add("active");
+      if (activeMobile) activeMobile.classList.add("active");
 
       sections.forEach(s => s.classList.remove("active"));
       const section = document.getElementById(`burger-${target}-section`);
       if (section) section.classList.add("active");
 
+      window.scrollTo({ top: 0, behavior: "smooth" });
       closeMobileNav();
     });
   });
-
-  if (hamburger) {
-    hamburger.addEventListener("click", () => {
-      const isOpen = layout.classList.toggle("nav-open");
-      document.body.classList.toggle("burger-nav-open", isOpen);
-      if (overlay) overlay.classList.toggle("active", isOpen);
-    });
-  }
-
-  if (overlay) {
-    overlay.addEventListener("click", closeMobileNav);
-  }
-
-  function closeMobileNav() {
-    if (!layout) return;
-    layout.classList.remove("nav-open");
-    document.body.classList.remove("burger-nav-open");
-    if (overlay) overlay.classList.remove("active");
-  }
 }
 
+/* ============================================
+   MOBILE NAV — NEW
+   ============================================ */
+function setupMobileNav() {
+  const menuBtn = document.getElementById("burgerMenuBtn");
+  const mobileNav = document.getElementById("burgerMobileNav");
+  if (!menuBtn || !mobileNav) return;
+
+  menuBtn.addEventListener("click", () => {
+    const isOpen = mobileNav.classList.toggle("open");
+    menuBtn.classList.toggle("open", isOpen);
+  });
+
+  document.addEventListener("click", e => {
+    if (!mobileNav.classList.contains("open")) return;
+    if (mobileNav.contains(e.target)) return;
+    if (menuBtn.contains(e.target)) return;
+    closeMobileNav();
+  });
+}
+
+function closeMobileNav() {
+  const menuBtn = document.getElementById("burgerMenuBtn");
+  const mobileNav = document.getElementById("burgerMobileNav");
+  if (mobileNav) mobileNav.classList.remove("open");
+  if (menuBtn) menuBtn.classList.remove("open");
+}
+
+/* ============================================
+   NAV SCROLL — NEW
+   ============================================ */
+function setupNavScroll() {
+  const nav = document.getElementById("burgerTopnav");
+  if (!nav) return;
+
+  const update = () => {
+    if (window.scrollY > 40) nav.classList.add("scrolled");
+    else nav.classList.remove("scrolled");
+  };
+
+  update();
+  window.addEventListener("scroll", update, { passive: true });
+}
+
+/* ============================================
+   MINESBURGER
+   ============================================ */
 function mbIndex(r, c) {
   return r * MB_SIZE + c;
 }
@@ -868,6 +902,9 @@ function setupMinesBurger() {
   mbReset();
 }
 
+/* ============================================
+   MATCH 3
+   ============================================ */
 function mmShuffle(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -1132,6 +1169,9 @@ function setupMatch3() {
   mmReset();
 }
 
+/* ============================================
+   MAZE
+   ============================================ */
 function mzGetSize(level) {
   if (level <= 1) return MZ_LEVEL_SIZES[0];
   if (level === 2) return MZ_LEVEL_SIZES[1];
@@ -1420,13 +1460,18 @@ function setupMaze() {
   mzReset();
 }
 
+/* ============================================
+   INIT
+   ============================================ */
 function init() {
+  setupNavScroll();
+  setupMobileNav();
+  setupTopnav();
   startAgeCounter();
   setChaosLevel();
   setupCursorCat();
   setupClickBurst();
   setupUpload();
-  setupSidebarNav();
   setupMinesBurger();
   setupMatch3();
   setupMaze();

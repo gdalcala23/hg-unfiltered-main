@@ -12,7 +12,45 @@
   <link rel="stylesheet" href="burger.css" />
 </head>
 <body>
-  <div class="cat-bg">
+
+  <!-- ============================================
+       TOP NAVBAR
+       ============================================ -->
+  <header class="burger-topnav" id="burgerTopnav">
+    <a href="index.html" class="burger-brand">
+      <span class="burger-brand-icon">🐱</span>
+      <span class="burger-brand-text">
+        <span class="burger-brand-title">Burger</span>
+        <span class="burger-brand-sub">The one and only</span>
+      </span>
+    </a>
+
+    <nav class="burger-topnav-links">
+      <button type="button" class="burger-topnav-link active" data-section="home">Home</button>
+      <button type="button" class="burger-topnav-link" data-section="pictures">Pictures</button>
+      <button type="button" class="burger-topnav-link" data-section="games">Games</button>
+    </nav>
+
+    <div class="burger-topnav-meta">
+      <a href="index.html" class="burger-topnav-home">HG Home →</a>
+      <button type="button" class="burger-menu-btn" id="burgerMenuBtn" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile nav -->
+  <div class="burger-mobile-nav" id="burgerMobileNav">
+    <button type="button" class="burger-mobile-link active" data-section="home">Home</button>
+    <button type="button" class="burger-mobile-link" data-section="pictures">Pictures</button>
+    <button type="button" class="burger-mobile-link" data-section="games">Games</button>
+    <a href="index.html" class="burger-mobile-link">HG Home →</a>
+  </div>
+
+  <!-- Background paws -->
+  <div class="cat-bg" aria-hidden="true">
     <div class="paw paw-1">🐾</div>
     <div class="paw paw-2">🐾</div>
     <div class="paw paw-3">🐾</div>
@@ -22,313 +60,237 @@
   <div class="cursor-cat" id="cursorCat">🐱</div>
   <div class="emoji-burst-layer" id="emojiBurstLayer"></div>
 
-  <div class="burger-layout">
-    <aside class="burger-sidebar">
-      <a href="index.html" class="burger-brand">
-        <div class="burger-brand-icon">🐱</div>
-        <div class="burger-brand-text">
-          <h1>Burger</h1>
-          <p>The one and only</p>
+  <!-- ============================================
+       CONTENT
+       ============================================ -->
+  <main class="burger-content">
+
+    <!-- HOME SECTION -->
+    <section id="burger-home-section" class="burger-section active">
+      <section class="burger-hero">
+        <div class="burger-hero-cat">
+          <span class="burger-hero-glow"></span>
+          <span class="burger-hero-emoji">🐱</span>
         </div>
-      </a>
 
-      <nav class="burger-nav">
-        <button type="button" class="burger-nav-item active" data-section="home">
-          <span class="burger-nav-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 10.5 12 3l9 7.5" />
-              <path d="M5 9.5V21h14V9.5" />
-            </svg>
-          </span>
-          <span class="burger-nav-label">Home</span>
-        </button>
+        <h1 class="burger-hero-name">
+          Burger <span class="burger-hero-heart">🧡</span>
+        </h1>
+        <p class="burger-hero-sub">Normal cat. Extraordinary floof. Full-time napper.</p>
 
-        <button type="button" class="burger-nav-item" data-section="pictures">
-          <span class="burger-nav-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="3" />
-              <circle cx="8.5" cy="8.5" r="1.5" />
-              <polyline points="21 15 16 10 5 21" />
-            </svg>
-          </span>
-          <span class="burger-nav-label">Pictures</span>
-        </button>
+        <div class="burger-counter-card">
+          <div class="burger-counter-label">With us for</div>
+          <div class="burger-counter-value" id="burgerCounter">—</div>
+          <div class="burger-counter-sub">since October 4, 2026</div>
+        </div>
+      </section>
 
-        <button type="button" class="burger-nav-item" data-section="games">
-          <span class="burger-nav-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="6" y1="12" x2="10" y2="12" />
-              <line x1="8" y1="10" x2="8" y2="14" />
-              <line x1="15" y1="13" x2="15.01" y2="13" />
-              <line x1="18" y1="11" x2="18.01" y2="11" />
-              <rect x="2" y="6" width="20" height="12" rx="3" />
-            </svg>
-          </span>
-          <span class="burger-nav-label">Games</span>
-        </button>
+      <section class="burger-stats-section">
+        <h2 class="burger-section-title">
+          <span>🐾</span> Cat Stats
+        </h2>
 
-        <a href="index.html" class="burger-nav-item burger-nav-link">
-          <span class="burger-nav-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 10.5 12 3l9 7.5" />
-              <path d="M5 9.5V21h14V9.5" />
-            </svg>
-          </span>
-          <span class="burger-nav-label">HG Home</span>
-        </a>
-      </nav>
+        <div class="burger-stats-grid">
+          <div class="burger-stat-card stat-orange">
+            <div class="burger-stat-icon">🎂</div>
+            <div class="burger-stat-label">Age</div>
+            <div class="burger-stat-value" id="burgerAgeShort">—</div>
+          </div>
 
-      <div class="burger-sidebar-foot">
-        <p>Made with 🧡 for Burger</p>
+          <div class="burger-stat-card stat-pink">
+            <div class="burger-stat-icon">🐈</div>
+            <div class="burger-stat-label">Species</div>
+            <div class="burger-stat-value">Normal Cat</div>
+          </div>
+
+          <div class="burger-stat-card stat-purple">
+            <div class="burger-stat-icon">✨</div>
+            <div class="burger-stat-label">Floofness</div>
+            <div class="burger-stat-value">∞</div>
+          </div>
+
+          <div class="burger-stat-card stat-orange">
+            <div class="burger-stat-icon">🌪️</div>
+            <div class="burger-stat-label">Chaos Level</div>
+            <div class="burger-stat-value" id="chaosLevel">Calculating...</div>
+          </div>
+
+          <div class="burger-stat-card stat-pink">
+            <div class="burger-stat-icon">😴</div>
+            <div class="burger-stat-label">Top Hobby</div>
+            <div class="burger-stat-value">Sleeping</div>
+          </div>
+
+          <div class="burger-stat-card stat-purple">
+            <div class="burger-stat-icon">🍗</div>
+            <div class="burger-stat-label">Favorite Food</div>
+            <div class="burger-stat-value">Anything, really</div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- PICTURES SECTION -->
+    <section id="burger-pictures-section" class="burger-section">
+      <div class="burger-ig-profile">
+        <div class="burger-ig-avatar">
+          <div class="burger-ig-avatar-ring"></div>
+          <div class="burger-ig-avatar-inner">🐱</div>
+        </div>
+
+        <div class="burger-ig-info">
+          <div class="burger-ig-top">
+            <h2 class="burger-ig-username">burger.the.orange</h2>
+          </div>
+
+          <div class="burger-ig-stats">
+            <div class="burger-ig-stat">
+              <span class="burger-ig-stat-num" id="burgerPhotoCount">0</span>
+              <span class="burger-ig-stat-label">posts</span>
+            </div>
+            <div class="burger-ig-stat">
+              <span class="burger-ig-stat-num" id="burgerLikeCount">0</span>
+              <span class="burger-ig-stat-label">likes</span>
+            </div>
+            <div class="burger-ig-stat">
+              <span class="burger-ig-stat-num">∞</span>
+              <span class="burger-ig-stat-label">cuteness</span>
+            </div>
+          </div>
+
+          <div class="burger-ig-bio">
+            <p class="burger-ig-bio-name">Burger 🐱</p>
+            <p class="burger-ig-bio-text">Orange tabby · Full-time napper</p>
+            <p class="burger-ig-bio-text">Rehomed October 4, 2026 🧡</p>
+          </div>
+        </div>
       </div>
-    </aside>
 
-    <button class="burger-hamburger" id="burgerHamburger" aria-label="Open menu">
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
+      <div class="burger-grid" id="burgerGrid"></div>
+    </section>
 
-    <div class="burger-overlay" id="burgerOverlay"></div>
+    <!-- GAMES SECTION -->
+    <section id="burger-games-section" class="burger-section">
+      <h2 class="burger-section-title">
+        <span>🎮</span> Games
+      </h2>
 
-    <main class="burger-content">
-      <section id="burger-home-section" class="burger-section active">
-        <section class="burger-hero">
-          <div class="burger-hero-cat">
-            <span class="burger-hero-emoji">🐱</span>
-            <span class="burger-hero-glow"></span>
+      <!-- MinesBurger -->
+      <div class="mb-game">
+        <div class="mb-header">
+          <div class="mb-title-group">
+            <div class="mb-title">MinesBurger 🐟</div>
+            <div class="mb-subtitle">16 × 16 · 40 fish</div>
           </div>
 
-          <h2 class="burger-hero-name">
-            Burger <span class="burger-hero-heart">🧡</span>
-          </h2>
-          <p class="burger-hero-sub">Normal cat. Extraordinary floof. Full-time napper.</p>
-
-          <div class="burger-counter-card">
-            <div class="burger-counter-label">With us for</div>
-            <div class="burger-counter-value" id="burgerCounter">—</div>
-            <div class="burger-counter-sub">since October 4, 2026</div>
-          </div>
-        </section>
-
-        <section class="burger-stats-section">
-          <h3 class="burger-section-title">
-            <span>🐾</span> Cat Stats
-          </h3>
-
-          <div class="burger-stats-grid">
-            <div class="burger-stat-card stat-orange">
-              <div class="burger-stat-icon">🎂</div>
-              <div class="burger-stat-label">Age</div>
-              <div class="burger-stat-value" id="burgerAgeShort">—</div>
+          <div class="mb-controls">
+            <div class="mb-stat">
+              <span class="mb-stat-label">Fish left</span>
+              <span class="mb-stat-value" id="mbMinesLeft">40</span>
             </div>
-
-            <div class="burger-stat-card stat-pink">
-              <div class="burger-stat-icon">🐈</div>
-              <div class="burger-stat-label">Species</div>
-              <div class="burger-stat-value">Normal Cat</div>
+            <div class="mb-stat">
+              <span class="mb-stat-label">Time</span>
+              <span class="mb-stat-value" id="mbTimer">0:00</span>
             </div>
-
-            <div class="burger-stat-card stat-purple">
-              <div class="burger-stat-icon">✨</div>
-              <div class="burger-stat-label">Floofness</div>
-              <div class="burger-stat-value">∞</div>
-            </div>
-
-            <div class="burger-stat-card stat-orange">
-              <div class="burger-stat-icon">🌪️</div>
-              <div class="burger-stat-label">Chaos Level</div>
-              <div class="burger-stat-value" id="chaosLevel">Calculating...</div>
-            </div>
-
-            <div class="burger-stat-card stat-pink">
-              <div class="burger-stat-icon">😴</div>
-              <div class="burger-stat-label">Top Hobby</div>
-              <div class="burger-stat-value">Sleeping</div>
-            </div>
-
-            <div class="burger-stat-card stat-purple">
-              <div class="burger-stat-icon">🍗</div>
-              <div class="burger-stat-label">Favorite Food</div>
-              <div class="burger-stat-value">Anything, really</div>
-            </div>
-          </div>
-        </section>
-      </section>
-
-      <section id="burger-pictures-section" class="burger-section">
-        <div class="burger-ig-profile">
-          <div class="burger-ig-avatar">
-            <div class="burger-ig-avatar-ring"></div>
-            <div class="burger-ig-avatar-inner">🐱</div>
-          </div>
-
-          <div class="burger-ig-info">
-            <div class="burger-ig-top">
-              <h2 class="burger-ig-username">burger.the.orange</h2>
-            </div>
-
-            <div class="burger-ig-stats">
-              <div class="burger-ig-stat">
-                <span class="burger-ig-stat-num" id="burgerPhotoCount">0</span>
-                <span class="burger-ig-stat-label">posts</span>
-              </div>
-              <div class="burger-ig-stat">
-                <span class="burger-ig-stat-num" id="burgerLikeCount">0</span>
-                <span class="burger-ig-stat-label">likes</span>
-              </div>
-              <div class="burger-ig-stat">
-                <span class="burger-ig-stat-num">∞</span>
-                <span class="burger-ig-stat-label">cuteness</span>
-              </div>
-            </div>
-
-            <div class="burger-ig-bio">
-              <p class="burger-ig-bio-name">Burger 🐱</p>
-              <p class="burger-ig-bio-text">Orange tabby · Full-time napper</p>
-              <p class="burger-ig-bio-text">Rehomed October 4, 2026 🧡</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="burger-grid" id="burgerGrid"></div>
-      </section>
-
-      <section id="burger-games-section" class="burger-section">
-        <h3 class="burger-section-title">
-          <span>🎮</span> Games
-        </h3>
-
-        <div class="mb-game">
-          <div class="mb-header">
-            <div class="mb-title-group">
-              <div class="mb-title">MinesBurger 🐟</div>
-              <div class="mb-subtitle">16 × 16 · 40 fish</div>
-            </div>
-
-            <div class="mb-controls">
-              <div class="mb-stat">
-                <span class="mb-stat-label">Fish left</span>
-                <span class="mb-stat-value" id="mbMinesLeft">40</span>
-              </div>
-
-              <div class="mb-stat">
-                <span class="mb-stat-label">Time</span>
-                <span class="mb-stat-value" id="mbTimer">0:00</span>
-              </div>
-
-              <button type="button" class="mb-reset-btn" id="mbReset" aria-label="Reset">
-                <span>🐾</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="mb-board-wrapper">
-            <div class="mb-board" id="mbBoard"></div>
-          </div>
-        </div>
-
-        <div class="mm-game">
-          <div class="mm-header">
-            <div class="mm-title-group">
-              <div class="mm-title">Match 3 🎴</div>
-              <div class="mm-subtitle">12 pairs · memory match</div>
-            </div>
-
-            <div class="mm-controls">
-              <div class="mm-stat">
-                <span class="mm-stat-label">Time</span>
-                <span class="mm-stat-value" id="mmTimer">0:00</span>
-              </div>
-
-              <div class="mm-stat">
-                <span class="mm-stat-label">Moves</span>
-                <span class="mm-stat-value" id="mmMoves">0</span>
-              </div>
-
-              <button type="button" class="mm-reset-btn" id="mmReset" aria-label="Reset">
-                <span>🐾</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="mm-difficulty">
-            <label for="mmDifficulty" class="mm-difficulty-label">Difficulty</label>
-            <select id="mmDifficulty" class="mm-select">
-              <option value="60">1 minute — chill</option>
-              <option value="120" selected>2 minutes — normal</option>
-              <option value="180">3 minutes — relaxed</option>
-            </select>
-            <button type="button" class="mm-start-btn" id="mmStart">Start 🐾</button>
-          </div>
-
-          <div class="mm-board" id="mmBoard"></div>
-        </div>
-
-        <div class="mz-game">
-          <div class="mz-header">
-            <div class="mz-title-group">
-              <div class="mz-title">Burger's Maze 🐱</div>
-              <div class="mz-subtitle">
-                Level <span id="mzLevel">1</span> · <span id="mzSize">10 × 10</span>
-              </div>
-            </div>
-
-            <div class="mz-controls">
-              <div class="mz-stat">
-                <span class="mz-stat-label">Steps</span>
-                <span class="mz-stat-value" id="mzSteps">0</span>
-              </div>
-
-              <div class="mz-stat">
-                <span class="mz-stat-label">Time</span>
-                <span class="mz-stat-value" id="mzTimer">0:00</span>
-              </div>
-
-              <button type="button" class="mz-reset-btn" id="mzReset" aria-label="Reset">
-                <span>🐾</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="mz-board-wrapper">
-            <div class="mz-board" id="mzBoard"></div>
-          </div>
-
-          <div class="mz-dpad">
-            <button type="button" class="mz-dpad-btn mz-up" data-dir="up" aria-label="Up">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="18 15 12 9 6 15" />
-              </svg>
-            </button>
-
-            <button type="button" class="mz-dpad-btn mz-left" data-dir="left" aria-label="Left">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="15 18 9 12 15 6" />
-              </svg>
-            </button>
-
-            <button type="button" class="mz-dpad-btn mz-right" data-dir="right" aria-label="Right">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-            </button>
-
-            <button type="button" class="mz-dpad-btn mz-down" data-dir="down" aria-label="Down">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
+            <button type="button" class="mb-reset-btn" id="mbReset" aria-label="Reset">
+              <span>🐾</span>
             </button>
           </div>
         </div>
-      </section>
 
-      <footer class="burger-footer">
-        <p>Made with 🧡💜 for Burger</p>
-      </footer>
-    </main>
-  </div>
+        <div class="mb-board-wrapper">
+          <div class="mb-board" id="mbBoard"></div>
+        </div>
+      </div>
 
+      <!-- Match 3 -->
+      <div class="mm-game">
+        <div class="mm-header">
+          <div class="mm-title-group">
+            <div class="mm-title">Match 3 🎴</div>
+            <div class="mm-subtitle">12 pairs · memory match</div>
+          </div>
+
+          <div class="mm-controls">
+            <div class="mm-stat">
+              <span class="mm-stat-label">Time</span>
+              <span class="mm-stat-value" id="mmTimer">0:00</span>
+            </div>
+            <div class="mm-stat">
+              <span class="mm-stat-label">Moves</span>
+              <span class="mm-stat-value" id="mmMoves">0</span>
+            </div>
+            <button type="button" class="mm-reset-btn" id="mmReset" aria-label="Reset">
+              <span>🐾</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="mm-difficulty">
+          <label for="mmDifficulty" class="mm-difficulty-label">Difficulty</label>
+          <select id="mmDifficulty" class="mm-select">
+            <option value="60">1 minute — chill</option>
+            <option value="120" selected>2 minutes — normal</option>
+            <option value="180">3 minutes — relaxed</option>
+          </select>
+          <button type="button" class="mm-start-btn" id="mmStart">Start 🐾</button>
+        </div>
+
+        <div class="mm-board" id="mmBoard"></div>
+      </div>
+
+      <!-- Maze -->
+      <div class="mz-game">
+        <div class="mz-header">
+          <div class="mz-title-group">
+            <div class="mz-title">Burger's Maze 🐱</div>
+            <div class="mz-subtitle">
+              Level <span id="mzLevel">1</span> · <span id="mzSize">10 × 10</span>
+            </div>
+          </div>
+
+          <div class="mz-controls">
+            <div class="mz-stat">
+              <span class="mz-stat-label">Steps</span>
+              <span class="mz-stat-value" id="mzSteps">0</span>
+            </div>
+            <div class="mz-stat">
+              <span class="mz-stat-label">Time</span>
+              <span class="mz-stat-value" id="mzTimer">0:00</span>
+            </div>
+            <button type="button" class="mz-reset-btn" id="mzReset" aria-label="Reset">
+              <span>🐾</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="mz-board-wrapper">
+          <div class="mz-board" id="mzBoard"></div>
+        </div>
+
+        <div class="mz-dpad">
+          <button type="button" class="mz-dpad-btn mz-up" data-dir="up" aria-label="Up">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15" /></svg>
+          </button>
+          <button type="button" class="mz-dpad-btn mz-left" data-dir="left" aria-label="Left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+          </button>
+          <button type="button" class="mz-dpad-btn mz-right" data-dir="right" aria-label="Right">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+          </button>
+          <button type="button" class="mz-dpad-btn mz-down" data-dir="down" aria-label="Down">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="burger-footer">
+      <p>Made with 🧡💜 for Burger</p>
+    </footer>
+  </main>
+
+  <!-- FAB -->
   <button type="button" class="burger-fab" id="burgerFab" aria-label="Add photo">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
       <line x1="12" y1="5" x2="12" y2="19" />
@@ -338,6 +300,7 @@
 
   <input type="file" id="burgerFileInput" accept="image/*" hidden />
 
+  <!-- Photo modal -->
   <div class="burger-modal" id="burgerModal" hidden>
     <div class="burger-modal-backdrop" data-close-modal></div>
     <div class="burger-modal-content">
@@ -354,13 +317,7 @@
             </svg>
           </button>
         </div>
-        <textarea
-          id="burgerCaptionInput"
-          class="burger-caption-input"
-          placeholder="Write a caption for Burger..."
-          maxlength="200"
-          rows="3"
-        ></textarea>
+        <textarea id="burgerCaptionInput" class="burger-caption-input" placeholder="Write a caption for Burger..." maxlength="200" rows="3"></textarea>
         <div class="burger-modal-actions">
           <button type="button" class="burger-cancel-btn" data-close-modal>Cancel</button>
           <button type="button" class="burger-post-btn" id="burgerPostBtn">Share 🐾</button>
@@ -369,6 +326,7 @@
     </div>
   </div>
 
+  <!-- Confirm delete -->
   <div class="burger-confirm" id="burgerConfirm" hidden>
     <div class="burger-confirm-backdrop" data-close-confirm></div>
     <div class="burger-confirm-content">
@@ -381,6 +339,7 @@
     </div>
   </div>
 
+  <!-- End modals -->
   <div class="mb-end-modal" id="mbEndModal" hidden>
     <div class="mb-end-backdrop"></div>
     <div class="mb-end-content">
