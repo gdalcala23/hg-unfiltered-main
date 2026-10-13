@@ -342,7 +342,9 @@ body:hover .cursor-glow {
   opacity: 0.4;
 }
 
-/* ---------- Intro overlay ---------- */
+/* ============================================
+   INTRO OVERLAY — CAT RUNNING LOADER
+   ============================================ */
 .intro {
   position: fixed;
   inset: 0;
@@ -396,20 +398,7 @@ body:hover .cursor-glow {
   text-align: center;
   padding: 2rem;
   max-width: 720px;
-}
-
-.intro-eyebrow {
-  display: inline-block;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 5px;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.55);
-  margin-bottom: 1.5rem;
-  opacity: 0;
-  transform: translateY(12px);
-  animation: introFadeUp 0.8s 0.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  width: 100%;
 }
 
 .intro-title {
@@ -418,7 +407,7 @@ body:hover .cursor-glow {
   font-weight: 700;
   letter-spacing: -0.04em;
   line-height: 1;
-  margin-bottom: 1.25rem;
+  margin-bottom: 2rem;
 }
 
 .intro-title-line {
@@ -431,7 +420,7 @@ body:hover .cursor-glow {
   opacity: 0;
   transform: translateY(20px) scale(0.96);
   animation:
-    introTitleIn 1s 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards,
+    introTitleIn 1s 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards,
     shimmerText 4s 0s ease-in-out infinite;
 }
 
@@ -450,33 +439,101 @@ body:hover .cursor-glow {
   50%      { background-position: 100% 50%; }
 }
 
-.intro-tagline {
-  font-family: 'Caveat', cursive;
-  font-size: clamp(1.5rem, 4vw, 2.25rem);
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.85);
-  letter-spacing: 0.01em;
-  margin-bottom: 2.5rem;
+/* ---------- CAT RUNNING LOADER ---------- */
+.cat-loader {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto 2.5rem;
+  padding: 0 1rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
   opacity: 0;
-  transform: translateY(12px);
-  animation: introFadeUp 0.9s 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: introFadeUp 0.7s 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-@keyframes introFadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+.cat-track {
+  position: relative;
+  flex: 1;
+  height: 60px;
+  display: flex;
+  align-items: flex-end;
 }
 
+.cat-runner {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  font-size: 2.25rem;
+  line-height: 1;
+  display: inline-block;
+  animation:
+    catRun 2.2s cubic-bezier(0.45, 0, 0.55, 1) infinite,
+    catBounceRun 0.35s ease-in-out infinite;
+  filter: drop-shadow(0 4px 10px rgba(255, 154, 86, 0.5));
+  transform-origin: center bottom;
+}
+
+@keyframes catRun {
+  0%   { left: 0; transform: scaleX(1); }
+  48%  { transform: scaleX(1); }
+  50%  { left: calc(100% - 2.25rem); transform: scaleX(1); }
+  52%  { transform: scaleX(-1); }
+  98%  { transform: scaleX(-1); }
+  100% { left: 0; transform: scaleX(-1); }
+}
+
+@keyframes catBounceRun {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50%      { transform: translateY(-6px) rotate(3deg); }
+}
+
+.cat-dust {
+  position: absolute;
+  left: 0;
+  bottom: 0.5rem;
+  font-size: 1.1rem;
+  opacity: 0.6;
+  animation: dustTrail 2.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  pointer-events: none;
+  filter: blur(0.5px);
+}
+
+@keyframes dustTrail {
+  0%   { left: 0; opacity: 0; }
+  5%   { opacity: 0.7; }
+  20%  { left: 15%; opacity: 0.5; }
+  40%  { opacity: 0.3; }
+  50%  { left: calc(100% - 3rem); opacity: 0; }
+  100% { left: 0; opacity: 0; }
+}
+
+.cat-finish {
+  font-size: 1.75rem;
+  line-height: 1;
+  margin-left: 0.5rem;
+  flex-shrink: 0;
+  animation: finishWiggle 1.5s ease-in-out infinite;
+  filter: drop-shadow(0 2px 8px rgba(225, 6, 0, 0.4));
+}
+
+@keyframes finishWiggle {
+  0%, 100% { transform: rotate(-8deg); }
+  50%      { transform: rotate(8deg); }
+}
+
+/* ---------- Progress ---------- */
 .intro-progress {
   width: 220px;
   max-width: 70vw;
   height: 2px;
-  margin: 0 auto 2rem;
+  margin: 0 auto;
   background: rgba(255, 255, 255, 0.08);
   border-radius: 999px;
   overflow: hidden;
   opacity: 0;
-  animation: introFadeUp 0.6s 1.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: introFadeUp 0.6s 1.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .intro-progress-bar {
@@ -485,6 +542,11 @@ body:hover .cursor-glow {
   background: linear-gradient(90deg, var(--f1-red), var(--rose), var(--orange));
   border-radius: 999px;
   box-shadow: 0 0 12px rgba(229, 122, 138, 0.6);
+}
+
+@keyframes introFadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 body.intro-active {
@@ -629,5 +691,18 @@ body.intro-active .bottom-bar {
 
   .intro-progress {
     width: 180px;
+  }
+
+  .cat-loader {
+    max-width: 320px;
+    margin-bottom: 2rem;
+  }
+
+  .cat-runner {
+    font-size: 1.85rem;
+  }
+
+  .cat-finish {
+    font-size: 1.5rem;
   }
 }
